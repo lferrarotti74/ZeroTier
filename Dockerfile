@@ -4,8 +4,10 @@ FROM debian:bullseye as stage
 
 ARG VERSION=1.12.0 //Default value provided
 
-RUN apt-get update -qq && apt-get -qq install make clang git -y
-RUN git clone -b ${VERSION} --depth 1 https://github.com/zerotier/ZeroTierOne.git
+RUN apt-get update -qq && apt-get -qq install make clang curl pkg-config libssl-dev git -y \
+&& curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+&& . "$HOME/.cargo/env" \
+&& git clone -b ${VERSION} --depth 1 https://github.com/zerotier/ZeroTierOne.git
 WORKDIR /ZeroTierOne
 RUN /usr/bin/make -j$(nproc)
 
