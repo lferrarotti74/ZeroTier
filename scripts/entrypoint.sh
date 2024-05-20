@@ -95,6 +95,7 @@ DEFAULT_PRIMARY_PORT=9993
 DEFAULT_PORT_MAPPING_ENABLED=true
 DEFAULT_ALLOW_TCP_FALLBACK_RELAY=true
 DEFAULT_INTERFACE_PREFIX_BLACKLIST=""
+DEFAULT_ALLOW_MANAGEMENT_FROM=""
 
 if [ "$ZT_OVERRIDE_LOCAL_CONF" = 'true' ] || [ ! -f "/var/lib/zerotier-one/local.conf" ]; then
   echo "{
@@ -103,6 +104,7 @@ if [ "$ZT_OVERRIDE_LOCAL_CONF" = 'true' ] || [ ! -f "/var/lib/zerotier-one/local
         \"portMappingEnabled\": ${ZT_PORT_MAPPING_ENABLED:-$DEFAULT_PORT_MAPPING_ENABLED},
         \"softwareUpdate\": \"disable\",
         \"interfacePrefixBlacklist\": [ ${INTERFACE_PREFIX_BLACKLIST:-$DEFAULT_INTERFACE_PREFIX_BLACKLIST} ],
+        \"allowManagementFrom\": [ ${ALLOW_MANAGEMENT_FROM:-$DEFAULT_ALLOW_MANAGEMENT_FROM} ],
         \"allowTcpFallbackRelay\": ${ZT_ALLOW_TCP_FALLBACK_RELAY:-$DEFAULT_ALLOW_TCP_FALLBACK_RELAY}
     }
   }" > /var/lib/zerotier-one/local.conf
@@ -129,6 +131,15 @@ if [ "x$ZT_INTERFACE_PREFIX_BLACKLIST" != "x" ]; then
   INTERFACES=$(echo "$ZT_INTERFACE_PREFIX_BLACKLIST" | jq -R 'split(",")');
   cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
   jq --argjson newkey "$INTERFACES" '(.settings.interfacePrefixBlacklist) |= $newkey' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  rm -f -- "$tmpfile"
+fi
+
+if [ "x$ZT_ALLOW_MANAGEMENT_FROM" != "x" ]; then
+  log_params "Special list of Management Networks is provided:" "$ZT_ALLOW_MANAGEMENT_FROM"
+  tmpfile=$(mktemp)
+  NETWORKS=$(echo "$ZT_ALLOW_MANAGEMENT_FROM" | jq -R 'split(",")');
+  cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+  jq --argjson newkey "$NETWORKS" '(.settings.allowManagementFrom) |= $newkey' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
   rm -f -- "$tmpfile"
 fi
 
