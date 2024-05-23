@@ -186,9 +186,19 @@ EOF
   chmod +x /checkhealth.sh
 fi
 
-while ! nc -z localhost 9993; do   
-  sleep 0.1 # wait for 1/10 of the second before check again
-done
+if [ -z "$ZT_PRIMARY_PORT" ]; then
+
+  while ! nc -z localhost $DEFAULT_PRIMARY_PORT; do   
+    sleep 0.1 # wait for 1/10 of the second before check again
+  done
+
+else
+
+  while ! nc -z localhost $ZT_PRIMARY_PORT; do   
+    sleep 0.1 # wait for 1/10 of the second before check again
+  done
+
+fi
 
 log_params "zerotier-cli info:" "$(zerotier-cli info)"
 
