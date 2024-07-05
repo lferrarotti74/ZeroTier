@@ -24,7 +24,7 @@ RUN rm -rf /var/lib/zerotier-one
 
 
 RUN apt-get -qq update
-RUN apt-get -qq install iproute2 net-tools fping 2ping iputils-ping iputils-arping curl openssl libssl1.1 jq netcat-openbsd -y
+RUN apt-get -qq install iproute2 net-tools fping 2ping iputils-ping iputils-arping curl openssl libssl1.1 zlib1g jq netcat-openbsd -y
 
 COPY scripts/entrypoint.sh /entrypoint.sh
 COPY scripts/healthcheck.sh /healthcheck.sh
