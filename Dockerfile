@@ -22,7 +22,7 @@ RUN ln -sf /usr/sbin/zerotier-one /usr/sbin/zerotier-cli
 RUN echo "${VERSION}" > /etc/zerotier-version \
     && rm -rf /var/lib/zerotier-one \
     && apt-get -qq update && apt-get upgrade -qq \
-    && apt-get -qq install iproute2 net-tools fping 2ping iputils-ping iputils-arping curl openssl libssl1.1 jq netcat-openbsd -y
+    && apt-get -qq install iproute2 net-tools fping 2ping iputils-ping iputils-arping curl openssl libssl3t64 jq netcat-openbsd -y
 
 COPY scripts/entrypoint.sh /entrypoint.sh
 COPY scripts/healthcheck.sh /healthcheck.sh
