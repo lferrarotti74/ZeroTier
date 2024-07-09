@@ -148,7 +148,7 @@ if [ "x$ZT_TCP_FALLBACK_RELAY" != "x" ]; then
   tmpfile=$(mktemp)
   TCPFALLBACKRELAY=$(echo "$ZT_TCP_FALLBACK_RELAY");
   cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  jq --argjson newkey "$TCPFALLBACKRELAY" '(.settings.tcpFallbackRelay) |= $newkey' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  jq --arg tcpFallbackRelay $TCPFALLBACKRELAY '.settings = { tcpFallbackRelay: $tcpFallbackRelay } + .settings' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
   rm -f -- "$tmpfile"
 fi
 
