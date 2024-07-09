@@ -143,6 +143,15 @@ if [ "x$ZT_ALLOW_MANAGEMENT_FROM" != "x" ]; then
   rm -f -- "$tmpfile"
 fi
 
+if [ "x$ZT_TCP_FALLBACK_RELAY" != "x" ]; then
+  log_params "Special value for TCP Fallback Relay is provided:" "$ZT_TCP_FALLBACK_RELAY"
+  tmpfile=$(mktemp)
+  TCPFALLBACKRELAY=$(echo "$ZT_TCP_FALLBACK_RELAY");
+  cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+  jq --argjson newkey "$TCPFALLBACKRELAY" '(.settings.tcpFallbackRelay) |= $newkey' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  rm -f -- "$tmpfile"
+fi
+
 log "Starting ZeroTier"
 nohup /usr/sbin/zerotier-one &
 
