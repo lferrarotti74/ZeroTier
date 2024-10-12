@@ -131,7 +131,7 @@ if [ "x$ZT_INTERFACE_PREFIX_BLACKLIST" != "x" ]; then
   INTERFACEPREFIXBLACKLIST=$(echo "$ZT_INTERFACE_PREFIX_BLACKLIST" | jq -R 'split(",")');
   cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
   #jq --argjson newkey "$INTERFACES" '(.settings.interfacePrefixBlacklist) |= $newkey' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
-  jq --argjson interfacePrefixBlacklist $INTERFACEPREFIXBLACKLIST '.settings += { interfacePrefixBlacklist: $interfacePrefixBlacklist }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  jq --argjson interfacePrefixBlacklist "$INTERFACEPREFIXBLACKLIST" '.settings += { interfacePrefixBlacklist: $interfacePrefixBlacklist }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
   rm -f -- "$tmpfile"
 fi
 
@@ -141,7 +141,7 @@ if [ "x$ZT_ALLOW_MANAGEMENT_FROM" != "x" ]; then
   ALLOWMANAGEMENTFROM=$(echo "$ZT_ALLOW_MANAGEMENT_FROM" | jq -R 'split(",")');
   cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
   #jq --argjson newkey "$NETWORKS" '(.settings.allowManagementFrom) |= $newkey' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
-  jq --argjson allowManagementFrom $ALLOWMANAGEMENTFROM '.settings += { allowManagementFrom: $allowManagementFrom }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  jq --argjson allowManagementFrom "$ALLOWMANAGEMENTFROM" '.settings += { allowManagementFrom: $allowManagementFrom }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
   rm -f -- "$tmpfile"
 fi
 
