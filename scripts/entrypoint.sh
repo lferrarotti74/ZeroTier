@@ -152,6 +152,15 @@ if [ "x$ZT_TCP_FALLBACK_RELAY" != "x" ]; then
   rm -f -- "$tmpfile"
 fi
 
+if [ "x$ZT_FORCE_TCP_RELAY" != "x" ]; then
+  log_params "Special value for Force TCP Relay is provided:" "$ZT_FORCE_TCP_RELAY"
+  tmpfile=$(mktemp)
+  FORCETCPRELAY=$(echo "$ZT_FORCE_TCP_RELAY");
+  cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+  jq --arg forceTcpRelay $FORCETCPRELAY '.settings = { forceTcpRelay: $forceTcpRelay } + .settings' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  rm -f -- "$tmpfile"
+fi
+
 log "Starting ZeroTier"
 nohup /usr/sbin/zerotier-one &
 
