@@ -5,7 +5,7 @@ FROM alpine:latest AS stage
 ARG VERSION=1.12.0 //Default value provided
 
 RUN apk update && apk upgrade \
-&& apk add --update alpine-sdk linux-headers openssl-dev make clang curl pkgconfig git \
+&& apk --update --no-cache add alpine-sdk linux-headers openssl-dev make clang curl pkgconfig git \
 && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
 && . "$HOME/.cargo/env" \
 && git clone -b ${VERSION} --depth 1 https://github.com/zerotier/ZeroTierOne.git
@@ -29,7 +29,7 @@ RUN ln -sf /usr/sbin/zerotier-one /usr/sbin/zerotier-cli
 RUN echo "${VERSION}" > /etc/zerotier-version \
     && rm -rf /var/lib/zerotier-one \
     && apk update && apk upgrade \
-    && apk add --update iproute2 net-tools fping iputils-ping iputils-arping curl openssl libssl3 jq netcat-openbsd libstdc++ libgcc
+    && apk --update --no-cache add iproute2 net-tools fping iputils-ping iputils-arping curl openssl libssl3 jq netcat-openbsd libstdc++ libgcc
 
 COPY scripts/entrypoint.sh /entrypoint.sh
 COPY scripts/healthcheck.sh /healthcheck.sh
