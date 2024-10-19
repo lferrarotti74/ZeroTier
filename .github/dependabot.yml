@@ -1,0 +1,18 @@
+# Basic `dependabot.yml` file with
+# minimum configuration
+
+version: 2
+updates:
+  # Enable version updates for Docker
+  - package-ecosystem: "docker"
+    # Look for a `Dockerfile` in the `root` directory
+    directory: "/"
+    # Check for updates once a week
+    schedule:
+      interval: "weekly"
+      # Check for updates on Saturday
+      day: "saturday"
+      # Check when starting the updates
+      time: "04:00"
+    # Enable a limit for pull requests for Docker dependencies
+    open-pull-requests-limit: 5
