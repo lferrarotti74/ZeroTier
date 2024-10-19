@@ -16,11 +16,11 @@ FROM alpine:latest
 
 ARG VERSION=1.12.0 //Default value provided
 
-LABEL org.opencontainers.image.title="zerotier" \
-      org.opencontainers.image.version="${VERSION}" \
-      org.opencontainers.image.description="ZeroTier One as Docker Image" \
-      org.opencontainers.image.licenses="MIT" \
-      org.opencontainers.image.source="https://github.com/lferrarotti74/ZeroTierOne"
+LABEL org.opencontainers.image.title="zerotier"
+LABEL org.opencontainers.image.version="${VERSION}"
+LABEL org.opencontainers.image.description="ZeroTier One as Docker Image"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.source="https://github.com/lferrarotti74/ZeroTierOne"
 
 COPY --from=stage /ZeroTierOne/zerotier-one /usr/sbin
 RUN ln -sf /usr/sbin/zerotier-one /usr/sbin/zerotier-idtool
