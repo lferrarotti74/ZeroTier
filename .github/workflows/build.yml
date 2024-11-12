@@ -16,7 +16,7 @@ jobs:
         id: source-env
         with:
           env-file: env/.env  
-      - name: Echo Zerotier Proxy Version from env file
+      - name: Echo ZerotierOne Version from env file
         run: | 
           echo ${{ steps.source-env.outputs.zerotierone_version }} >> "$GITHUB_ENV"
       - name: Log in to Docker Hub
