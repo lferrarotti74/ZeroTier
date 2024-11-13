@@ -175,6 +175,15 @@ if [ "x$ZT_TERTIARY_PORT" != "x" ]; then
   rm -f -- "$tmpfile"
 fi
 
+if [ "x$ZT_ALLOW_SECONDARY_PORT" != "x" ]; then
+  log_params "Special value for enable/disable Secondary Port is provided:" "$ZT_ALLOW_SECONDARY_PORT"
+  tmpfile=$(mktemp)
+  SECONDARY_PORT=$(echo "$ZT_ALLOW_SECONDARY_PORT");
+  cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+  jq --argjson allowSecondaryPort "$SECONDARY_PORT" '.settings += { allowSecondaryPort: $allowSecondaryPort }' "$tmpfile" >local.conf &&
+  rm -f -- "$tmpfile"
+fi
+
 log "Starting ZeroTier"
 nohup /usr/sbin/zerotier-one &
 
