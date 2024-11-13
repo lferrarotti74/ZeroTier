@@ -184,6 +184,15 @@ if [ "x$ZT_ALLOW_SECONDARY_PORT" != "x" ]; then
   rm -f -- "$tmpfile"
 fi
 
+if [ "x$ZT_BIND" != "x" ]; then
+  log_params "Special list of IPs to bind instead of all interfaces is provided:" "$ZT_INTERFACE_PREFIX_BLACKLIST"
+  tmpfile=$(mktemp)
+  BINDIPLIST=$(echo "$ZT_BIND" | jq -R 'split(",")');
+  cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+  jq --argjson bind "$BINDIPLIST" '.settings += { bind: $bind }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  rm -f -- "$tmpfile"
+fi
+
 log "Starting ZeroTier"
 nohup /usr/sbin/zerotier-one &
 
