@@ -157,6 +157,24 @@ if [ "x$ZT_FORCE_TCP_RELAY" != "x" ]; then
   rm -f -- "$tmpfile"
 fi
 
+if [ "x$ZT_SECONDARY_PORT" != "x" ]; then
+  log_params "Special value for Secondary Port is provided:" "$ZT_SECONDARY_PORT"
+  tmpfile=$(mktemp)
+  SECONDARYPORT=$(echo "$ZT_SECONDARY_PORT");
+  cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+  jq --argjson secondaryPort "$SECONDARYPORT" '.settings += { secondaryPort: $secondaryPort }' "$tmpfile" >local.conf &&
+  rm -f -- "$tmpfile"
+fi
+
+if [ "x$ZT_TERTIARY_PORT" != "x" ]; then
+  log_params "Special value for Tertiary Port is provided:" "$ZT_TERTIARY_PORT"
+  tmpfile=$(mktemp)
+  TERTIARYPORT=$(echo "$ZT_TERTIARY_PORT");
+  cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+  jq --argjson tertiaryPort "$TERTIARYPORT" '.settings += { tertiaryPort: $tertiaryPort }' "$tmpfile" >local.conf &&
+  rm -f -- "$tmpfile"
+fi
+
 log "Starting ZeroTier"
 nohup /usr/sbin/zerotier-one &
 
