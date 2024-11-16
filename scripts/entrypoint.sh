@@ -185,11 +185,20 @@ if [ "x$ZT_ALLOW_SECONDARY_PORT" != "x" ]; then
 fi
 
 if [ "x$ZT_BIND" != "x" ]; then
-  log_params "Special list of IPs to bind instead of all interfaces is provided:" "$ZT_INTERFACE_PREFIX_BLACKLIST"
+  log_params "Special list of IPs to bind instead of all interfaces is provided:" "$ZT_BIND"
   tmpfile=$(mktemp)
   BINDIPLIST=$(echo "$ZT_BIND" | jq -R 'split(",")');
   cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
   jq --argjson bind "$BINDIPLIST" '.settings += { bind: $bind }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  rm -f -- "$tmpfile"
+fi
+
+if [ "x$ZT_MULTI_PATH_MODE" != "x" ]; then
+  log_params "Override mode for the multipathmode is provided:" "$ZT_MULTI_PATH_MODE"
+  tmpfile=$(mktemp)
+  MULTIPATHMODE=$(echo "$ZT_MULTI_PATH_MODE");
+  cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+  jq --argjson multipathmode "$MULTIPATHMODE" '.settings += { multipathMode: $multipathmode }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
   rm -f -- "$tmpfile"
 fi
 
