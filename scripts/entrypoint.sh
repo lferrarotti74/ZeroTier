@@ -162,7 +162,7 @@ if [ "x$ZT_SECONDARY_PORT" != "x" ]; then
   tmpfile=$(mktemp)
   SECONDARYPORT=$(echo "$ZT_SECONDARY_PORT");
   cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  jq --argjson secondaryPort "$SECONDARYPORT" '.settings += { secondaryPort: $secondaryPort }' "$tmpfile" >local.conf &&
+  jq --argjson secondaryPort "$SECONDARYPORT" '.settings += { secondaryPort: $secondaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
   rm -f -- "$tmpfile"
 fi
 
@@ -171,7 +171,7 @@ if [ "x$ZT_TERTIARY_PORT" != "x" ]; then
   tmpfile=$(mktemp)
   TERTIARYPORT=$(echo "$ZT_TERTIARY_PORT");
   cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  jq --argjson tertiaryPort "$TERTIARYPORT" '.settings += { tertiaryPort: $tertiaryPort }' "$tmpfile" >local.conf &&
+  jq --argjson tertiaryPort "$TERTIARYPORT" '.settings += { tertiaryPort: $tertiaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
   rm -f -- "$tmpfile"
 fi
 
@@ -180,7 +180,7 @@ if [ "x$ZT_ALLOW_SECONDARY_PORT" != "x" ]; then
   tmpfile=$(mktemp)
   SECONDARY_PORT=$(echo "$ZT_ALLOW_SECONDARY_PORT");
   cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  jq --argjson allowSecondaryPort "$SECONDARY_PORT" '.settings += { allowSecondaryPort: $allowSecondaryPort }' "$tmpfile" >local.conf &&
+  jq --argjson allowSecondaryPort "$SECONDARY_PORT" '.settings += { allowSecondaryPort: $allowSecondaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
   rm -f -- "$tmpfile"
 fi
 
