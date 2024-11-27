@@ -31,7 +31,7 @@ else
 
     curl -s -o /dev/null --fail -H "X-ZT1-Auth: $(cat /var/lib/zerotier-one/authtoken.secret)" http://localhost:$PORT/status; curlcode=$?
 
-    /bin/sh checkhealth.sh; checkhealthcode=$?
+    /bin/sh /var/lib/zerotier-one/checkhealth.sh; checkhealthcode=$?
 
     if [ $curlcode -ne 0 ]; then
         curl -s -H "X-ZT1-Auth: $(cat /var/lib/zerotier-one/authtoken.secret)" http://localhost:$PORT/status

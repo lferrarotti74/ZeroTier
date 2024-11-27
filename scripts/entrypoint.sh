@@ -220,7 +220,7 @@ done
 if [ "x$@" != "x" ]; then
   log_params "Writing healthcheck for networks:" "$@"
 
-  cat >/checkhealth.sh <<EOF
+  cat >/var/lib/zerotier-one/checkhealth.sh <<EOF
 #!/bin/bash
 for i in $@
 do
@@ -228,13 +228,13 @@ do
 done
 EOF
 
-  chmod +x /checkhealth.sh
+  chmod +x /var/lib/zerotier-one/checkhealth.sh
 fi
 
 if [ "x$ZEROTIER_JOIN_NETWORKS" != "x" ]; then
   log_params "Writing healthcheck for networks:" "$ZEROTIER_JOIN_NETWORKS"
 
-  cat >/checkhealth.sh <<EOF
+  cat >/var/lib/zerotier-one/checkhealth.sh <<EOF
 #!/bin/bash
 for i in $ZEROTIER_JOIN_NETWORKS
 do
@@ -242,7 +242,7 @@ do
 done
 EOF
 
-  chmod +x /checkhealth.sh
+  chmod +x /var/lib/zerotier-one/checkhealth.sh
 fi
 
 if [ -z "$ZT_PRIMARY_PORT" ]; then
