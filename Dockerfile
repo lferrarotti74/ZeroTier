@@ -33,18 +33,18 @@ RUN echo "${VERSION}" > /etc/zerotier-version \
     && addgroup -S zerotier && adduser -S zerotier -G zerotier -h /var/lib/zerotier-one -g "zerotier" \
     && echo "export HISTFILE=/dev/null" >> /etc/profile
 
-COPY scripts/entrypoint.sh /entrypoint.sh
-COPY scripts/healthcheck.sh /healthcheck.sh
-RUN chmod 755 /entrypoint.sh
-RUN chmod 755 /healthcheck.sh
+COPY scripts/entrypoint.sh /var/lib/zerotier-one/entrypoint.sh
+COPY scripts/healthcheck.sh /var/lib/zerotier-one/healthcheck.sh
+RUN chmod 755 /var/lib/zerotier-one/entrypoint.sh
+RUN chmod 755 /var/lib/zerotier-one/healthcheck.sh
 
 # Define a custom healthcheck command
-HEALTHCHECK --interval=60s --timeout=5s --retries=3 CMD [ "/healthcheck.sh" ]
+HEALTHCHECK --interval=60s --timeout=5s --retries=3 CMD [ "/var/lib/zerotier-one/healthcheck.sh" ]
 
 EXPOSE 9993/udp
 USER zerotier
 
 # Start the entrypoint script for the container image
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/var/lib/zerotier-one/entrypoint.sh"]
 
 CMD []
