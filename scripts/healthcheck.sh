@@ -38,7 +38,7 @@ else
     fi
 
     if [ $checkhealthcode -ne 0 ]; then
-        zerotier-cli get "$NETWORKS" status
+        sudo zerotier-cli get "$NETWORKS" status
     fi
 
     if [ $curlcode -eq 0 ] && [ $checkhealthcode -eq 0 ]; then
