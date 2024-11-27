@@ -34,7 +34,7 @@ mkztfile zerotier-one.port 0600 "9993"
 
 killzerotier() {
   log "Killing zerotier"
-  kill "$(cat /var/lib/zerotier-one/zerotier-one.pid 2>/dev/null)"
+  sudo kill "$(cat /var/lib/zerotier-one/zerotier-one.pid 2>/dev/null)"
   exit 0
 }
 
@@ -203,7 +203,7 @@ if [ "x$ZT_MULTI_PATH_MODE" != "x" ]; then
 fi
 
 log "Starting ZeroTier"
-nohup /usr/sbin/zerotier-one &
+sudo /bin/sh -c 'nohup /usr/sbin/zerotier-one &'
 
 while ! grepzt
 do
@@ -224,7 +224,7 @@ if [ "x$@" != "x" ]; then
 #!/bin/bash
 for i in $@
 do
-  [ "\$(zerotier-cli get \$i status)" = "OK" ] || exit 1
+  [ "\$(sudo zerotier-cli get \$i status)" = "OK" ] || exit 1
 done
 EOF
 
@@ -238,7 +238,7 @@ if [ "x$ZEROTIER_JOIN_NETWORKS" != "x" ]; then
 #!/bin/bash
 for i in $ZEROTIER_JOIN_NETWORKS
 do
-  [ "\$(zerotier-cli get \$i status)" = "OK" ] || exit 1
+  [ "\$(sudo zerotier-cli get \$i status)" = "OK" ] || exit 1
 done
 EOF
 
@@ -259,7 +259,7 @@ else
 
 fi
 
-log_params "zerotier-cli info:" "$(zerotier-cli info)"
+log_params "zerotier-cli info:" "$(sudo zerotier-cli info)"
 
 log "Sleeping infinitely"
 while true
