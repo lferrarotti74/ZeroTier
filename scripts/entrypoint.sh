@@ -130,7 +130,7 @@ if [ "x$ZT_INTERFACE_PREFIX_BLACKLIST" != "x" ]; then
   tmpfile=$(mktemp)
   INTERFACEPREFIXBLACKLIST=$(echo "$ZT_INTERFACE_PREFIX_BLACKLIST" | jq -R 'split(",")');
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  sudo jq --argjson interfacePrefixBlacklist "$INTERFACEPREFIXBLACKLIST" '.settings += { interfacePrefixBlacklist: $interfacePrefixBlacklist }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo bash -c 'jq --argjson interfacePrefixBlacklist "$INTERFACEPREFIXBLACKLIST" '.settings += { interfacePrefixBlacklist: $interfacePrefixBlacklist }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&'
   sudo rm -f -- "$tmpfile"
 fi
 
@@ -139,7 +139,7 @@ if [ "x$ZT_ALLOW_MANAGEMENT_FROM" != "x" ]; then
   tmpfile=$(mktemp)
   ALLOWMANAGEMENTFROM=$(echo "$ZT_ALLOW_MANAGEMENT_FROM" | jq -R 'split(",")');
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  sudo jq --argjson allowManagementFrom "$ALLOWMANAGEMENTFROM" '.settings += { allowManagementFrom: $allowManagementFrom }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo bash -c 'jq --argjson allowManagementFrom "$ALLOWMANAGEMENTFROM" '.settings += { allowManagementFrom: $allowManagementFrom }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&'
   sudo rm -f -- "$tmpfile"
 fi
 
@@ -148,7 +148,7 @@ if [ "x$ZT_TCP_FALLBACK_RELAY" != "x" ]; then
   tmpfile=$(mktemp)
   TCPFALLBACKRELAY=$(echo "$ZT_TCP_FALLBACK_RELAY");
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  sudo jq --arg tcpFallbackRelay $TCPFALLBACKRELAY '.settings = { tcpFallbackRelay: $tcpFallbackRelay } + .settings' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo bash -c 'jq --arg tcpFallbackRelay $TCPFALLBACKRELAY '.settings = { tcpFallbackRelay: $tcpFallbackRelay } + .settings' "$tmpfile" >/var/lib/zerotier-one/local.conf &&'
   sudo rm -f -- "$tmpfile"
 fi
 
@@ -157,7 +157,7 @@ if [ "x$ZT_FORCE_TCP_RELAY" != "x" ]; then
   tmpfile=$(mktemp)
   FORCETCPRELAY=$(echo "$ZT_FORCE_TCP_RELAY");
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  sudo jq --arg forceTcpRelay $FORCETCPRELAY '.settings = { forceTcpRelay: $forceTcpRelay } + .settings' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo bash -c 'jq --arg forceTcpRelay $FORCETCPRELAY '.settings = { forceTcpRelay: $forceTcpRelay } + .settings' "$tmpfile" >/var/lib/zerotier-one/local.conf &&'
   sudo rm -f -- "$tmpfile"
 fi
 
@@ -166,7 +166,7 @@ if [ "x$ZT_SECONDARY_PORT" != "x" ]; then
   tmpfile=$(mktemp)
   SECONDARYPORT=$(echo "$ZT_SECONDARY_PORT");
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  sudo jq --argjson secondaryPort "$SECONDARYPORT" '.settings += { secondaryPort: $secondaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo bash -c 'jq --argjson secondaryPort "$SECONDARYPORT" '.settings += { secondaryPort: $secondaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&'
   sudo rm -f -- "$tmpfile"
 fi
 
@@ -175,7 +175,7 @@ if [ "x$ZT_TERTIARY_PORT" != "x" ]; then
   tmpfile=$(mktemp)
   TERTIARYPORT=$(echo "$ZT_TERTIARY_PORT");
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  sudo jq --argjson tertiaryPort "$TERTIARYPORT" '.settings += { tertiaryPort: $tertiaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo bash -c 'jq --argjson tertiaryPort "$TERTIARYPORT" '.settings += { tertiaryPort: $tertiaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&'
   sudo rm -f -- "$tmpfile"
 fi
 
@@ -184,7 +184,7 @@ if [ "x$ZT_ALLOW_SECONDARY_PORT" != "x" ]; then
   tmpfile=$(mktemp)
   SECONDARY_PORT=$(echo "$ZT_ALLOW_SECONDARY_PORT");
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  sudo jq --argjson allowSecondaryPort "$SECONDARY_PORT" '.settings += { allowSecondaryPort: $allowSecondaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo bash -c 'jq --argjson allowSecondaryPort "$SECONDARY_PORT" '.settings += { allowSecondaryPort: $allowSecondaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&'
   sudo rm -f -- "$tmpfile"
 fi
 
@@ -193,7 +193,7 @@ if [ "x$ZT_BIND" != "x" ]; then
   tmpfile=$(mktemp)
   BINDIPLIST=$(echo "$ZT_BIND" | jq -R 'split(",")');
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  sudo jq --argjson bind "$BINDIPLIST" '.settings += { bind: $bind }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo bash -c 'jq --argjson bind "$BINDIPLIST" '.settings += { bind: $bind }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&'
   sudo rm -f -- "$tmpfile"
 fi
 
@@ -202,7 +202,7 @@ if [ "x$ZT_MULTI_PATH_MODE" != "x" ]; then
   tmpfile=$(mktemp)
   MULTIPATHMODE=$(echo "$ZT_MULTI_PATH_MODE");
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  sudo jq --argjson multipathmode "$MULTIPATHMODE" '.settings += { multipathMode: $multipathmode }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo bash -c 'jq --argjson multipathmode "$MULTIPATHMODE" '.settings += { multipathMode: $multipathmode }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&'
   sudo rm -f -- "$tmpfile"
 fi
 
