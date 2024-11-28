@@ -11,8 +11,8 @@ mkztfile() {
   content=$3
 
   mkdir -p /var/lib/zerotier-one
-  echo "$content" > "/var/lib/zerotier-one/$file"
-  chmod "$mode" "/var/lib/zerotier-one/$file"
+  sudo echo "$content" > "/var/lib/zerotier-one/$file"
+  sudo chmod "$mode" "/var/lib/zerotier-one/$file"
 }
 
 if [ "x$ZEROTIER_API_SECRET" != "x" ]
@@ -96,7 +96,7 @@ DEFAULT_PORT_MAPPING_ENABLED=true
 DEFAULT_ALLOW_TCP_FALLBACK_RELAY=true
 
 if [ "$ZT_OVERRIDE_LOCAL_CONF" = 'true' ] || [ ! -f "/var/lib/zerotier-one/local.conf" ]; then
-  echo "{
+  sudo echo "{
     \"settings\": {
         \"primaryPort\": ${ZT_PRIMARY_PORT:-$DEFAULT_PRIMARY_PORT},
         \"portMappingEnabled\": ${ZT_PORT_MAPPING_ENABLED:-$DEFAULT_PORT_MAPPING_ENABLED},
@@ -108,98 +108,98 @@ fi
 
 if [ "x$ZT_PLANET_URL_FILE" != "x" ]; then
   log_params "Downloading Custom Planet File from Controller URL:" "$ZT_PLANET_URL_FILE"
-  curl -s "$ZT_PLANET_URL_FILE" -o /var/lib/zerotier-one/planet
+  sudo curl -s "$ZT_PLANET_URL_FILE" -o /var/lib/zerotier-one/planet
 fi
 
 if [ "x$@" != "x" ] && [ "x$ZT_DEVICEMAP" != "x" ]; then
   log_params "Special Device Mapping was selected for joining Network from command line:" "$@"
-  echo $@="$ZT_DEVICEMAP" > /var/lib/zerotier-one/devicemap
+  sudo echo $@="$ZT_DEVICEMAP" > /var/lib/zerotier-one/devicemap
 fi
 
 if [ "x$ZEROTIER_JOIN_NETWORKS" != "x" ] && [ "x$ZT_DEVICEMAP" != "x" ]; then
   log_params "Special Device Mapping was selected for joining Network from environment:" "$ZEROTIER_JOIN_NETWORKS"
-  echo "$ZEROTIER_JOIN_NETWORKS"="$ZT_DEVICEMAP" > /var/lib/zerotier-one/devicemap
+  sudo echo "$ZEROTIER_JOIN_NETWORKS"="$ZT_DEVICEMAP" > /var/lib/zerotier-one/devicemap
 fi
 
 if [ "x$ZT_INTERFACE_PREFIX_BLACKLIST" != "x" ]; then
   log_params "Special list of Interfaces that need to be blacklisted is provided:" "$ZT_INTERFACE_PREFIX_BLACKLIST"
   tmpfile=$(mktemp)
   INTERFACEPREFIXBLACKLIST=$(echo "$ZT_INTERFACE_PREFIX_BLACKLIST" | jq -R 'split(",")');
-  cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  jq --argjson interfacePrefixBlacklist "$INTERFACEPREFIXBLACKLIST" '.settings += { interfacePrefixBlacklist: $interfacePrefixBlacklist }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
-  rm -f -- "$tmpfile"
+  sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+  sudo jq --argjson interfacePrefixBlacklist "$INTERFACEPREFIXBLACKLIST" '.settings += { interfacePrefixBlacklist: $interfacePrefixBlacklist }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo rm -f -- "$tmpfile"
 fi
 
 if [ "x$ZT_ALLOW_MANAGEMENT_FROM" != "x" ]; then
   log_params "Special list of Management Networks is provided:" "$ZT_ALLOW_MANAGEMENT_FROM"
   tmpfile=$(mktemp)
   ALLOWMANAGEMENTFROM=$(echo "$ZT_ALLOW_MANAGEMENT_FROM" | jq -R 'split(",")');
-  cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  jq --argjson allowManagementFrom "$ALLOWMANAGEMENTFROM" '.settings += { allowManagementFrom: $allowManagementFrom }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
-  rm -f -- "$tmpfile"
+  sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+  sudo jq --argjson allowManagementFrom "$ALLOWMANAGEMENTFROM" '.settings += { allowManagementFrom: $allowManagementFrom }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo rm -f -- "$tmpfile"
 fi
 
 if [ "x$ZT_TCP_FALLBACK_RELAY" != "x" ]; then
   log_params "Special value for TCP Fallback Relay is provided:" "$ZT_TCP_FALLBACK_RELAY"
   tmpfile=$(mktemp)
   TCPFALLBACKRELAY=$(echo "$ZT_TCP_FALLBACK_RELAY");
-  cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  jq --arg tcpFallbackRelay $TCPFALLBACKRELAY '.settings = { tcpFallbackRelay: $tcpFallbackRelay } + .settings' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
-  rm -f -- "$tmpfile"
+  sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+  sudo jq --arg tcpFallbackRelay $TCPFALLBACKRELAY '.settings = { tcpFallbackRelay: $tcpFallbackRelay } + .settings' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo rm -f -- "$tmpfile"
 fi
 
 if [ "x$ZT_FORCE_TCP_RELAY" != "x" ]; then
   log_params "Special value for Force TCP Relay is provided:" "$ZT_FORCE_TCP_RELAY"
   tmpfile=$(mktemp)
   FORCETCPRELAY=$(echo "$ZT_FORCE_TCP_RELAY");
-  cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  jq --arg forceTcpRelay $FORCETCPRELAY '.settings = { forceTcpRelay: $forceTcpRelay } + .settings' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
-  rm -f -- "$tmpfile"
+  sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+  sudo jq --arg forceTcpRelay $FORCETCPRELAY '.settings = { forceTcpRelay: $forceTcpRelay } + .settings' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo rm -f -- "$tmpfile"
 fi
 
 if [ "x$ZT_SECONDARY_PORT" != "x" ]; then
   log_params "Special value for Secondary Port is provided:" "$ZT_SECONDARY_PORT"
   tmpfile=$(mktemp)
   SECONDARYPORT=$(echo "$ZT_SECONDARY_PORT");
-  cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  jq --argjson secondaryPort "$SECONDARYPORT" '.settings += { secondaryPort: $secondaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
-  rm -f -- "$tmpfile"
+  sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+  sudo jq --argjson secondaryPort "$SECONDARYPORT" '.settings += { secondaryPort: $secondaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo rm -f -- "$tmpfile"
 fi
 
 if [ "x$ZT_TERTIARY_PORT" != "x" ]; then
   log_params "Special value for Tertiary Port is provided:" "$ZT_TERTIARY_PORT"
   tmpfile=$(mktemp)
   TERTIARYPORT=$(echo "$ZT_TERTIARY_PORT");
-  cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  jq --argjson tertiaryPort "$TERTIARYPORT" '.settings += { tertiaryPort: $tertiaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
-  rm -f -- "$tmpfile"
+  sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+  sudo jq --argjson tertiaryPort "$TERTIARYPORT" '.settings += { tertiaryPort: $tertiaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo rm -f -- "$tmpfile"
 fi
 
 if [ "x$ZT_ALLOW_SECONDARY_PORT" != "x" ]; then
   log_params "Special value for enable/disable Secondary Port is provided:" "$ZT_ALLOW_SECONDARY_PORT"
   tmpfile=$(mktemp)
   SECONDARY_PORT=$(echo "$ZT_ALLOW_SECONDARY_PORT");
-  cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  jq --argjson allowSecondaryPort "$SECONDARY_PORT" '.settings += { allowSecondaryPort: $allowSecondaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
-  rm -f -- "$tmpfile"
+  sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+  sudo jq --argjson allowSecondaryPort "$SECONDARY_PORT" '.settings += { allowSecondaryPort: $allowSecondaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo rm -f -- "$tmpfile"
 fi
 
 if [ "x$ZT_BIND" != "x" ]; then
   log_params "Special list of IPs to bind instead of all interfaces is provided:" "$ZT_BIND"
   tmpfile=$(mktemp)
   BINDIPLIST=$(echo "$ZT_BIND" | jq -R 'split(",")');
-  cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  jq --argjson bind "$BINDIPLIST" '.settings += { bind: $bind }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
-  rm -f -- "$tmpfile"
+  sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+  sudo jq --argjson bind "$BINDIPLIST" '.settings += { bind: $bind }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo rm -f -- "$tmpfile"
 fi
 
 if [ "x$ZT_MULTI_PATH_MODE" != "x" ]; then
   log_params "Override mode for the multipathmode is provided:" "$ZT_MULTI_PATH_MODE"
   tmpfile=$(mktemp)
   MULTIPATHMODE=$(echo "$ZT_MULTI_PATH_MODE");
-  cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  jq --argjson multipathmode "$MULTIPATHMODE" '.settings += { multipathMode: $multipathmode }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
-  rm -f -- "$tmpfile"
+  sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+  sudo jq --argjson multipathmode "$MULTIPATHMODE" '.settings += { multipathMode: $multipathmode }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
+  sudo rm -f -- "$tmpfile"
 fi
 
 log "Starting ZeroTier"
@@ -220,7 +220,7 @@ done
 if [ "x$@" != "x" ]; then
   log_params "Writing healthcheck for networks:" "$@"
 
-  cat >/var/lib/zerotier-one/checkhealth.sh <<EOF
+  sudo cat >/var/lib/zerotier-one/checkhealth.sh <<EOF
 #!/bin/bash
 for i in $@
 do
@@ -228,13 +228,13 @@ do
 done
 EOF
 
-  chmod +x /var/lib/zerotier-one/checkhealth.sh
+  sudo chmod +x /var/lib/zerotier-one/checkhealth.sh
 fi
 
 if [ "x$ZEROTIER_JOIN_NETWORKS" != "x" ]; then
   log_params "Writing healthcheck for networks:" "$ZEROTIER_JOIN_NETWORKS"
 
-  cat >/var/lib/zerotier-one/checkhealth.sh <<EOF
+  sudo cat >/var/lib/zerotier-one/checkhealth.sh <<EOF
 #!/bin/bash
 for i in $ZEROTIER_JOIN_NETWORKS
 do
@@ -242,7 +242,7 @@ do
 done
 EOF
 
-  chmod +x /var/lib/zerotier-one/checkhealth.sh
+  sudo chmod +x /var/lib/zerotier-one/checkhealth.sh
 fi
 
 if [ -z "$ZT_PRIMARY_PORT" ]; then
