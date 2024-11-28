@@ -15,10 +15,10 @@ fi
 
 if [ -z "$NETWORKS" ]; then
 
-    curl -s -o /dev/null --fail -H "X-ZT1-Auth: $(cat /var/lib/zerotier-one/authtoken.secret)" http://localhost:$PORT/status; curlcode=$?
+    curl -s -o /dev/null --fail -H "X-ZT1-Auth: $(sudo cat /var/lib/zerotier-one/authtoken.secret)" http://localhost:$PORT/status; curlcode=$?
 
     if [ $curlcode -ne 0 ]; then
-        curl -s -H "X-ZT1-Auth: $(cat /var/lib/zerotier-one/authtoken.secret)" http://localhost:$PORT/status
+        curl -s -H "X-ZT1-Auth: $(sudo cat /var/lib/zerotier-one/authtoken.secret)" http://localhost:$PORT/status
     fi
 
     if [ $curlcode -eq 0 ]; then
@@ -29,12 +29,12 @@ if [ -z "$NETWORKS" ]; then
 
 else
 
-    curl -s -o /dev/null --fail -H "X-ZT1-Auth: $(cat /var/lib/zerotier-one/authtoken.secret)" http://localhost:$PORT/status; curlcode=$?
+    curl -s -o /dev/null --fail -H "X-ZT1-Auth: $(sudo cat /var/lib/zerotier-one/authtoken.secret)" http://localhost:$PORT/status; curlcode=$?
 
     /bin/sh /var/lib/zerotier-one/checkhealth.sh; checkhealthcode=$?
 
     if [ $curlcode -ne 0 ]; then
-        curl -s -H "X-ZT1-Auth: $(cat /var/lib/zerotier-one/authtoken.secret)" http://localhost:$PORT/status
+        curl -s -H "X-ZT1-Auth: $(sudo cat /var/lib/zerotier-one/authtoken.secret)" http://localhost:$PORT/status
     fi
 
     if [ $checkhealthcode -ne 0 ]; then
