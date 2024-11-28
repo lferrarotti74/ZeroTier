@@ -11,7 +11,8 @@ mkztfile() {
   content=$3
 
   mkdir -p /var/lib/zerotier-one
-  sudo echo "$content" > "/var/lib/zerotier-one/$file"
+  #echo "$content" > "/var/lib/zerotier-one/$file"
+  echo "$content" | sudo tee -a "/var/lib/zerotier-one/$file" > /dev/null
   sudo chmod "$mode" "/var/lib/zerotier-one/$file"
 }
 
@@ -96,14 +97,15 @@ DEFAULT_PORT_MAPPING_ENABLED=true
 DEFAULT_ALLOW_TCP_FALLBACK_RELAY=true
 
 if [ "$ZT_OVERRIDE_LOCAL_CONF" = 'true' ] || [ ! -f "/var/lib/zerotier-one/local.conf" ]; then
-  sudo echo "{
+  echo "{
     \"settings\": {
         \"primaryPort\": ${ZT_PRIMARY_PORT:-$DEFAULT_PRIMARY_PORT},
         \"portMappingEnabled\": ${ZT_PORT_MAPPING_ENABLED:-$DEFAULT_PORT_MAPPING_ENABLED},
         \"softwareUpdate\": \"disable\",
         \"allowTcpFallbackRelay\": ${ZT_ALLOW_TCP_FALLBACK_RELAY:-$DEFAULT_ALLOW_TCP_FALLBACK_RELAY}
     }
-  }" > /var/lib/zerotier-one/local.conf
+  }" | sudo tee -a /var/lib/zerotier-one/local.conf > /dev/null
+  #}" > /var/lib/zerotier-one/local.conf
 fi
 
 if [ "x$ZT_PLANET_URL_FILE" != "x" ]; then
@@ -113,12 +115,14 @@ fi
 
 if [ "x$@" != "x" ] && [ "x$ZT_DEVICEMAP" != "x" ]; then
   log_params "Special Device Mapping was selected for joining Network from command line:" "$@"
-  sudo echo $@="$ZT_DEVICEMAP" > /var/lib/zerotier-one/devicemap
+  #echo $@="$ZT_DEVICEMAP" > /var/lib/zerotier-one/devicemap
+  echo $@="$ZT_DEVICEMAP" | sudo tee -a /var/lib/zerotier-one/devicemap > /dev/null
 fi
 
 if [ "x$ZEROTIER_JOIN_NETWORKS" != "x" ] && [ "x$ZT_DEVICEMAP" != "x" ]; then
   log_params "Special Device Mapping was selected for joining Network from environment:" "$ZEROTIER_JOIN_NETWORKS"
-  sudo echo "$ZEROTIER_JOIN_NETWORKS"="$ZT_DEVICEMAP" > /var/lib/zerotier-one/devicemap
+  #echo "$ZEROTIER_JOIN_NETWORKS"="$ZT_DEVICEMAP" > /var/lib/zerotier-one/devicemap
+  echo "$ZEROTIER_JOIN_NETWORKS"="$ZT_DEVICEMAP" | sudo tee -a /var/lib/zerotier-one/devicemap > /dev/null
 fi
 
 if [ "x$ZT_INTERFACE_PREFIX_BLACKLIST" != "x" ]; then
@@ -220,13 +224,13 @@ done
 if [ "x$@" != "x" ]; then
   log_params "Writing healthcheck for networks:" "$@"
 
-  sudo cat >/var/lib/zerotier-one/checkhealth.sh <<EOF
+  sudo bash -c 'cat >/var/lib/zerotier-one/checkhealth.sh <<EOF
 #!/bin/bash
 for i in $@
 do
   [ "\$(sudo zerotier-cli get \$i status)" = "OK" ] || exit 1
 done
-EOF
+EOF'
 
   sudo chmod +x /var/lib/zerotier-one/checkhealth.sh
 fi
@@ -234,13 +238,13 @@ fi
 if [ "x$ZEROTIER_JOIN_NETWORKS" != "x" ]; then
   log_params "Writing healthcheck for networks:" "$ZEROTIER_JOIN_NETWORKS"
 
-  sudo cat >/var/lib/zerotier-one/checkhealth.sh <<EOF
+  sudo bash -c 'cat >/var/lib/zerotier-one/checkhealth.sh <<EOF
 #!/bin/bash
 for i in $ZEROTIER_JOIN_NETWORKS
 do
   [ "\$(sudo zerotier-cli get \$i status)" = "OK" ] || exit 1
 done
-EOF
+EOF'
 
   sudo chmod +x /var/lib/zerotier-one/checkhealth.sh
 fi
