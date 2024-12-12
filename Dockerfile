@@ -2,10 +2,14 @@
 
 FROM alpine:latest AS stage
 
+# Define an optional build argument to invalidate cache
+ARG CACHEBUST=1
+
 ARG VERSION=1.12.0 //Default value provided
 
 RUN apk --no-cache update && apk --no-cache upgrade \
 && apk --no-cache --update add alpine-sdk linux-headers openssl-dev make clang curl pkgconfig git \
+&& rm -rf /var/cache/apk/* \
 && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
 && . "$HOME/.cargo/env" \
 && git clone -b ${VERSION} --depth 1 https://github.com/zerotier/ZeroTierOne.git
@@ -13,6 +17,9 @@ WORKDIR /ZeroTierOne
 RUN /usr/bin/make -j$(nproc)
 
 FROM alpine:latest
+
+# Define an optional build argument to invalidate cache
+ARG CACHEBUST=1
 
 ARG VERSION=1.12.0 //Default value provided
 
@@ -30,6 +37,7 @@ RUN echo "${VERSION}" > /etc/zerotier-version \
     && rm -rf /var/lib/zerotier-one \
     && apk --no-cache update && apk --no-cache upgrade \
     && apk --no-cache --update add iproute2 net-tools fping iputils-ping iputils-arping curl openssl libssl3 jq netcat-openbsd libstdc++ libgcc sudo \
+    && rm -rf /var/cache/apk/* \
     && addgroup -S zerotier && adduser -S zerotier -G zerotier -h /var/lib/zerotier-one -g "zerotier" \
     && echo "export HISTFILE=/dev/null" >> /etc/profile
 
