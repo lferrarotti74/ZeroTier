@@ -41,7 +41,7 @@ jobs:
       matrix:
         platform: [
           {name: "linux/amd64", tag: "amd64"},
-          {name: "linux/arm64", tag: "arm64"},
+          #{name: "linux/arm64", tag: "arm64"},
           {name: "linux/arm/v7", tag: "armv7"}
         ]
     steps:
