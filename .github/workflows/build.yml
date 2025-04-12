@@ -41,8 +41,9 @@ jobs:
       matrix:
         platform: [
           {name: "linux/amd64", tag: "amd64"},
-          #{name: "linux/arm64", tag: "arm64"},
-          {name: "linux/arm/v7", tag: "armv7"}
+          {name: "linux/arm/v6", tag: "arm32v6"},
+          {name: "linux/arm/v7", tag: "arm32v7"},
+          {name: "linux/arm64/v8", tag: "arm64v8"}
         ]
     steps:
       - name: Checkout
