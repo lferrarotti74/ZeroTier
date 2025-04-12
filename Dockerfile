@@ -7,7 +7,7 @@ ARG TARGETARCH
 # Define an optional build argument to invalidate cache
 ARG CACHEBUST=1
 
-ARG VERSION=1.12.0 //Default value provided
+ARG VERSION=1.12.0 # Default value provided
 
 # Common packages for all architectures
 RUN apk --no-cache update && apk --no-cache upgrade \
@@ -25,10 +25,6 @@ RUN if [ "$TARGETARCH" = "arm" ] || [ "$TARGETARCH" = "armv7" ]; then \
     fi \
     && git clone -b ${VERSION} --depth 1 https://github.com/zerotier/ZeroTierOne.git
 
-#&& curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
-#&& . "$HOME/.cargo/env" \
-#&& git clone -b ${VERSION} --depth 1 https://github.com/zerotier/ZeroTierOne.git
-
 WORKDIR /ZeroTierOne
 RUN /usr/bin/make -j$(nproc)
 
@@ -37,7 +33,7 @@ FROM alpine:latest
 # Define an optional build argument to invalidate cache
 ARG CACHEBUST=1
 
-ARG VERSION=1.12.0 //Default value provided
+ARG VERSION=1.12.0 # Default value provided
 
 LABEL org.opencontainers.image.title="zerotier"
 LABEL org.opencontainers.image.version="${VERSION}"
@@ -46,8 +42,8 @@ LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.source="https://github.com/lferrarotti74/ZeroTierOne"
 
 COPY --from=stage /ZeroTierOne/zerotier-one /usr/sbin
-RUN ln -sf /usr/sbin/zerotier-one /usr/sbin/zerotier-idtool
-RUN ln -sf /usr/sbin/zerotier-one /usr/sbin/zerotier-cli
+RUN ln -sf /usr/sbin/zerotier-one /usr/sbin/zerotier-idtool && \
+    ln -sf /usr/sbin/zerotier-one /usr/sbin/zerotier-cli
 
 RUN echo "${VERSION}" > /etc/zerotier-version \
     && rm -rf /var/lib/zerotier-one \
