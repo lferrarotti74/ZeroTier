@@ -2,17 +2,33 @@
 
 FROM alpine:latest AS stage
 
+ARG TARGETARCH
+
 # Define an optional build argument to invalidate cache
 ARG CACHEBUST=1
 
 ARG VERSION=1.12.0 //Default value provided
 
+# Common packages for all architectures
 RUN apk --no-cache update && apk --no-cache upgrade \
 && apk --no-cache --update add alpine-sdk linux-headers openssl-dev make clang curl pkgconfig git \
-&& rm -rf /var/cache/apk/* \
-&& curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
-&& . "$HOME/.cargo/env" \
-&& git clone -b ${VERSION} --depth 1 https://github.com/zerotier/ZeroTierOne.git
+&& rm -rf /var/cache/apk/*
+
+# Architecture-specific setup
+RUN if [ "$TARGETARCH" = "arm" ] || [ "$TARGETARCH" = "armv7" ]; then \
+        # For ARM architectures, use the package manager
+        apk --no-cache add rust cargo; \
+    else \
+        # For AMD64 and ARM64, use rustup
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+        && . "$HOME/.cargo/env"; \
+    fi \
+    && git clone -b ${VERSION} --depth 1 https://github.com/zerotier/ZeroTierOne.git
+
+#&& curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+#&& . "$HOME/.cargo/env" \
+#&& git clone -b ${VERSION} --depth 1 https://github.com/zerotier/ZeroTierOne.git
+
 WORKDIR /ZeroTierOne
 RUN /usr/bin/make -j$(nproc)
 
