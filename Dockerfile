@@ -15,7 +15,7 @@ RUN apk --no-cache update && apk --no-cache upgrade \
 && rm -rf /var/cache/apk/*
 
 # Architecture-specific setup
-RUN if [ "$TARGETARCH" = "arm64v8" ] || [ "$TARGETARCH" = "arm32v7" ] || [ "$TARGETARCH" = "arm32v6" ]; then \
+RUN if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "arm" ]; then \
         # For ARM architectures, use the package manager
         apk --no-cache add rust cargo; \
     else \
