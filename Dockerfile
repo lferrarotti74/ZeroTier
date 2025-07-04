@@ -25,8 +25,24 @@ RUN if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "arm" ]; then \
     fi \
     && git clone -b ${VERSION} --depth 1 https://github.com/zerotier/ZeroTierOne.git
 
+# Set environment variables for ARM builds to prevent linker crashes
+RUN if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "arm" ]; then \
+        export CARGO_PROFILE_RELEASE_LTO=false && \
+        export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1 && \
+        export OPENSSL_NO_VENDOR=1; \
+    fi
+
 WORKDIR /ZeroTierOne
-RUN /usr/bin/make -j$(nproc)
+
+# Architecture-specific build commands
+RUN if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "arm" ]; then \
+        # For ARM: Use limited parallelism to avoid segmentation faults
+        # Try -j2 first, fallback to -j1 if still failing
+        /usr/bin/make -j2 || /usr/bin/make -j1; \
+    else \
+        # For AMD64: Use full parallelism
+        /usr/bin/make -j$(nproc); \
+    fi
 
 FROM alpine:latest
 
