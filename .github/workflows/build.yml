@@ -61,6 +61,21 @@ jobs:
       - name: Echo ZerotierOne Version from env file
         run: | 
           echo ${{ steps.source-env.outputs.zerotierone_version }} >> "$GITHUB_ENV"
+      
+      # Generate smart cache buster based on trigger type:
+      # - Schedule/Manual runs: Full cache invalidation with timestamp
+      # - Regular pushes: Daily cache invalidation for balance
+      - name: Generate Smart Cache Buster
+        run: |
+          if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "CACHE_BUSTER=$(date +%s)" >> "$GITHUB_ENV"
+            echo "Full cache invalidation (timestamp): $(date +%s)"
+            echo "Reason: Manual trigger or scheduled run"
+          else
+            echo "CACHE_BUSTER=$(date +%Y%m%d)" >> "$GITHUB_ENV"
+            echo "Daily cache invalidation: $(date +%Y%m%d)"
+            echo "Reason: Regular push to main branch"
+          fi
         
       - name: Prepare
         run: |
@@ -114,13 +129,18 @@ jobs:
             ${{ runner.os }}-buildx-${{ matrix.platform.name }}-
             ${{ runner.os }}-buildx-
         
+      # Set build arguments:
+      # - VERSION: ZeroTier version to build
+      # - CACHEBUST: Cache invalidation timestamp based on trigger type
       - name: Build and Push Image by Digest
         id: build
         uses: docker/build-push-action@v6.18.0
         with:
           context: .
           platforms: ${{ matrix.platform.name }}
-          build-args: VERSION=${{ env.ZEROTIERONE_VERSION }}
+          build-args: |
+            VERSION=${{ env.ZEROTIERONE_VERSION }}
+            CACHEBUST=${{ env.CACHE_BUSTER }}
           labels: ${{ steps.meta.outputs.labels }}
           provenance: mode=max
           sbom: true

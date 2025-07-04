@@ -10,7 +10,8 @@ ARG CACHEBUST=1
 ARG VERSION=1.12.0 # Default value provided
 
 # Common packages for all architectures
-RUN apk --no-cache update && apk --no-cache upgrade \
+RUN echo "Cache invalidation: ${CACHEBUST}" \
+&& apk --no-cache update && apk --no-cache upgrade \
 && apk --no-cache --update add alpine-sdk linux-headers openssl-dev make clang curl pkgconfig git \
 && rm -rf /var/cache/apk/*
 
@@ -19,28 +20,34 @@ RUN if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "arm" ]; then \
         # For ARM architectures, use the package manager
         apk --no-cache add rust cargo; \
     else \
-        # For AMD64 and ARM64, use rustup
+        # For AMD64, use rustup
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
         && . "$HOME/.cargo/env"; \
     fi \
     && git clone -b ${VERSION} --depth 1 https://github.com/zerotier/ZeroTierOne.git
 
 # Set environment variables for ARM builds to prevent linker crashes
+# Use ENV instead of export to make them persistent across RUN instructions
 RUN if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "arm" ]; then \
-        export CARGO_PROFILE_RELEASE_LTO=false && \
-        export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1 && \
-        export OPENSSL_NO_VENDOR=1; \
+        echo "export CARGO_PROFILE_RELEASE_LTO=false" >> /etc/profile.d/cargo.sh && \
+        echo "export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1" >> /etc/profile.d/cargo.sh && \
+        echo "export OPENSSL_NO_VENDOR=1" >> /etc/profile.d/cargo.sh; \
     fi
 
 WORKDIR /ZeroTierOne
 
 # Architecture-specific build commands
 RUN if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "arm" ]; then \
-        # For ARM: Use limited parallelism to avoid segmentation faults
-        # Try -j2 first, fallback to -j1 if still failing
-        /usr/bin/make -j2 || /usr/bin/make -j1; \
+        # Source the environment variables and build for ARM
+        . /etc/profile.d/cargo.sh 2>/dev/null || true && \
+        export CARGO_PROFILE_RELEASE_LTO=false && \
+        export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1 && \
+        export OPENSSL_NO_VENDOR=1 && \
+        echo "Building for ARM with reduced parallelism..." && \
+        (/usr/bin/make -j2 || /usr/bin/make -j1); \
     else \
         # For AMD64: Use full parallelism
+        echo "Building for AMD64 with full parallelism..." && \
         /usr/bin/make -j$(nproc); \
     fi
 
@@ -63,6 +70,7 @@ RUN ln -sf /usr/sbin/zerotier-one /usr/sbin/zerotier-idtool && \
 
 RUN echo "${VERSION}" > /etc/zerotier-version \
     && rm -rf /var/lib/zerotier-one \
+    && echo "Cache invalidation: ${CACHEBUST}" \
     && apk --no-cache update && apk --no-cache upgrade \
     && apk --no-cache --update add iproute2 net-tools fping iputils-ping iputils-arping curl openssl libssl3 jq netcat-openbsd libstdc++ libgcc sudo \
     && rm -rf /var/cache/apk/* \
