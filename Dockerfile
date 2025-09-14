@@ -1,6 +1,6 @@
 # vim: ft=dockerfile
 
-FROM alpine:latest AS stage
+FROM alpine:3 AS stage
 
 ARG TARGETARCH
 
@@ -12,7 +12,7 @@ ARG VERSION=1.12.0 # Default value provided
 # Common packages for all architectures
 RUN echo "Cache invalidation: ${CACHEBUST}" \
 && apk --no-cache update && apk --no-cache upgrade \
-&& apk --no-cache --update add alpine-sdk linux-headers openssl-dev make clang curl pkgconfig git \
+&& apk --no-cache --update add alpine-sdk clang curl git linux-headers make openssl-dev pkgconfig \
 && rm -rf /var/cache/apk/*
 
 # Architecture-specific setup
@@ -51,7 +51,7 @@ RUN if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "arm" ]; then \
         /usr/bin/make -j$(nproc); \
     fi
 
-FROM alpine:latest
+FROM alpine:3
 
 # Define an optional build argument to invalidate cache
 ARG CACHEBUST=1
@@ -65,14 +65,27 @@ LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.source="https://github.com/lferrarotti74/ZeroTierOne"
 
 COPY --from=stage /ZeroTierOne/zerotier-one /usr/sbin
-RUN ln -sf /usr/sbin/zerotier-one /usr/sbin/zerotier-idtool && \
-    ln -sf /usr/sbin/zerotier-one /usr/sbin/zerotier-cli
 
-RUN echo "${VERSION}" > /etc/zerotier-version \
+RUN ln -sf /usr/sbin/zerotier-one /usr/sbin/zerotier-idtool && \
+    ln -sf /usr/sbin/zerotier-one /usr/sbin/zerotier-cli && \
+    echo "${VERSION}" > /etc/zerotier-version \
     && rm -rf /var/lib/zerotier-one \
     && echo "Cache invalidation: ${CACHEBUST}" \
     && apk --no-cache update && apk --no-cache upgrade \
-    && apk --no-cache --update add iproute2 net-tools fping iputils-ping iputils-arping curl openssl libssl3 jq netcat-openbsd libstdc++ libgcc sudo \
+    && apk --no-cache --update add \
+    curl \
+    fping \
+    iproute2 \
+    iputils-arping \
+    iputils-ping \
+    jq \
+    libgcc \
+    libssl3 \
+    libstdc++ \
+    net-tools \
+    netcat-openbsd \
+    openssl \
+    sudo \
     && rm -rf /var/cache/apk/* \
     && addgroup -S zerotier && adduser -S zerotier -G zerotier -h /var/lib/zerotier-one -g "zerotier" \
     && echo "export HISTFILE=/dev/null" >> /etc/profile
