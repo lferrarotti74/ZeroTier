@@ -38,7 +38,7 @@ Key features include:
 For detailed licensing information, please refer to:
 - [ZeroTier Pricing Page](https://www.zerotier.com/pricing/)
 - [Original ZeroTier Repository](https://github.com/zerotier/ZeroTierOne)
-- [LICENSE.txt](LICENSE) in this repository
+- [LICENSE](LICENSE) in this repository
 
 ## Quick Start
 
