@@ -86,9 +86,16 @@ jobs:
       matrix:
         platform: [
           {name: "linux/amd64", tag: "amd64"},
+          {name: "linux/amd64/v2", tag: "amd64v2"},
+          {name: "linux/amd64/v3", tag: "amd64v3"},
+          {name: "linux/amd64/v4", tag: "amd64v4"},
+          {name: "linux/386", tag: "i386"},
           {name: "linux/arm/v6", tag: "arm32v6"},
           {name: "linux/arm/v7", tag: "arm32v7"},
-          {name: "linux/arm64/v8", tag: "arm64v8"}
+          {name: "linux/arm64/v8", tag: "arm64v8"},
+          {name: "linux/riscv64", tag: "riscv64"},
+          {name: "linux/ppc64le", tag: "ppc64le"},
+          {name: "linux/s390x", tag: "s390x"}
         ]
     steps:
       - name: Print the Purpose of Run
