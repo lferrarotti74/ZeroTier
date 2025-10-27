@@ -259,7 +259,7 @@ jobs:
           ls -l /tmp/digests
           
       - name: Upload Digest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: digests-${{ env.PLATFORM_PAIR }}
           path: /tmp/digests/*
