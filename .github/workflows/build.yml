@@ -320,31 +320,27 @@ jobs:
             ${{ env.REGISTRY_IMAGE }}
             ${{ env.GHCR_IMAGE }}
 
-      - name: Pull digests and prepare manifest list
+      - name: Create and push manifest lists
         run: |
           cd /tmp/digests
+
+          # Collect all digest references
           DIGESTS=""
           for f in $(ls | grep -E '^[a-f0-9]{64}$'); do
-            echo "Pulling GHCR image digest: $f"
-            docker pull "${{ env.GHCR_IMAGE }}@sha256:$f"
             DIGESTS="$DIGESTS ${{ env.GHCR_IMAGE }}@sha256:$f"
           done
+
           if [ -z "$DIGESTS" ]; then
             echo "No digests found. Skipping manifest creation."
             exit 0
           fi
-          echo "DIGESTS=$DIGESTS" >> "$GITHUB_ENV"
 
-      - name: Create and push manifest lists
-        run: |
-          cd /tmp/digests
-          echo "Creating manifest for Docker Hub..."
-          docker buildx imagetools create --tag ${{ env.REGISTRY_IMAGE }}:latest $DIGESTS
-          docker buildx imagetools create --tag ${{ env.REGISTRY_IMAGE }}:${{ env.ZEROTIERONE_VERSION }} $DIGESTS
-
-          echo "Creating manifest for GHCR..."
-          docker buildx imagetools create --tag ${{ env.GHCR_IMAGE }}:latest $DIGESTS
-          docker buildx imagetools create --tag ${{ env.GHCR_IMAGE }}:${{ env.ZEROTIERONE_VERSION }} $DIGESTS
+          # Create manifest lists for Docker Hub and GHCR
+          for REGISTRY in "${{ env.REGISTRY_IMAGE }}" "${{ env.GHCR_IMAGE }}"; do
+            echo "Creating manifest for $REGISTRY"
+            docker buildx imagetools create --tag $REGISTRY:latest $DIGESTS
+            docker buildx imagetools create --tag $REGISTRY:${{ env.ZEROTIERONE_VERSION }} $DIGESTS
+          done
 
       - name: Inspect images
         run: |
