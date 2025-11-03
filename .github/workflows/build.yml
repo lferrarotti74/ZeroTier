@@ -273,19 +273,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        
+
       - name: Download digests
         uses: actions/download-artifact@v6
         with:
           path: /tmp/digests
           pattern: digests-*
           merge-multiple: true
-          
+
       - name: List digests downloaded
         run: |
           echo "Digest files retrieved:"
           ls -l /tmp/digests
-        
+
       - name: Set Environment
         uses: c-py/action-dotenv-to-setenv@v5
         id: source-env
@@ -295,7 +295,7 @@ jobs:
       - name: Echo ZerotierOne Version from env file
         run: | 
           echo ${{ steps.source-env.outputs.zerotierone_version }} >> "$GITHUB_ENV"
-          
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3.6.0
         with:
@@ -308,7 +308,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.11.1
 
@@ -319,24 +319,59 @@ jobs:
           images: |
             ${{ env.REGISTRY_IMAGE }}
             ${{ env.GHCR_IMAGE }}
-          
+
+      - name: Pull GHCR images locally and tag for Docker Hub
+        run: |
+          cd /tmp/digests
+          for f in $(ls | grep -E '^[a-f0-9]{64}$'); do
+            echo "Pulling GHCR image digest: $f"
+            docker pull "${{ env.GHCR_IMAGE }}@sha256:$f"
+            docker tag "${{ env.GHCR_IMAGE }}@sha256:$f" "${{ env.REGISTRY_IMAGE }}@sha256:$f"
+          done
+
       - name: Create manifest list and push to Docker Hub
         working-directory: /tmp/digests
         run: |
-          docker buildx imagetools create --tag ${{ env.REGISTRY_IMAGE }}:latest \
-            $(printf '${{ env.GHCR_IMAGE }}@sha256:%s ' *)
-          docker buildx imagetools create --tag ${{ env.REGISTRY_IMAGE }}:${{ env.ZEROTIERONE_VERSION }} \
-            $(printf '${{ env.GHCR_IMAGE }}@sha256:%s ' *)
+          for i in {1..3}; do
+            docker buildx imagetools create \
+              --max-concurrent-uploads=1 \
+              --tag ${{ env.REGISTRY_IMAGE }}:latest \
+              $(ls | grep -E '^[a-f0-9]{64}$' | xargs -I{} echo "${{ env.REGISTRY_IMAGE }}@sha256:{}") && break
+            echo "Retrying Docker Hub push for latest ($i)..."
+            sleep 10
+          done
+
+          for i in {1..3}; do
+            docker buildx imagetools create \
+              --max-concurrent-uploads=1 \
+              --tag ${{ env.REGISTRY_IMAGE }}:${{ env.ZEROTIERONE_VERSION }} \
+              $(ls | grep -E '^[a-f0-9]{64}$' | xargs -I{} echo "${{ env.REGISTRY_IMAGE }}@sha256:{}") && break
+            echo "Retrying Docker Hub push for version ($i)..."
+            sleep 10
+          done
 
       - name: Create manifest list and push to GHCR
         working-directory: /tmp/digests
         run: |
-          docker buildx imagetools create --tag ${{ env.GHCR_IMAGE }}:latest \
-            $(printf '${{ env.GHCR_IMAGE }}@sha256:%s ' *)
-          docker buildx imagetools create --tag ${{ env.GHCR_IMAGE }}:${{ env.ZEROTIERONE_VERSION }} \
-            $(printf '${{ env.GHCR_IMAGE }}@sha256:%s ' *)
-            
-      - name: Inspect image
+          for i in {1..3}; do
+            docker buildx imagetools create \
+              --max-concurrent-uploads=1 \
+              --tag ${{ env.GHCR_IMAGE }}:latest \
+              $(ls | grep -E '^[a-f0-9]{64}$' | xargs -I{} echo "${{ env.GHCR_IMAGE }}@sha256:{}") && break
+            echo "Retrying GHCR push for latest ($i)..."
+            sleep 10
+          done
+
+          for i in {1..3}; do
+            docker buildx imagetools create \
+              --max-concurrent-uploads=1 \
+              --tag ${{ env.GHCR_IMAGE }}:${{ env.ZEROTIERONE_VERSION }} \
+              $(ls | grep -E '^[a-f0-9]{64}$' | xargs -I{} echo "${{ env.GHCR_IMAGE }}@sha256:{}") && break
+            echo "Retrying GHCR push for version ($i)..."
+            sleep 10
+          done
+
+      - name: Inspect images
         run: |
           echo "Docker Hub images:"
           docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:latest
