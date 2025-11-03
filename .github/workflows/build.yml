@@ -320,62 +320,37 @@ jobs:
             ${{ env.REGISTRY_IMAGE }}
             ${{ env.GHCR_IMAGE }}
 
-      - name: Pull GHCR images locally and tag for Docker Hub
+      - name: Pull digests and prepare manifest list
         run: |
           cd /tmp/digests
+          DIGESTS=""
           for f in $(ls | grep -E '^[a-f0-9]{64}$'); do
             echo "Pulling GHCR image digest: $f"
             docker pull "${{ env.GHCR_IMAGE }}@sha256:$f"
-            docker tag "${{ env.GHCR_IMAGE }}@sha256:$f" "${{ env.REGISTRY_IMAGE }}@sha256:$f"
+            DIGESTS="$DIGESTS ${{ env.GHCR_IMAGE }}@sha256:$f"
           done
+          if [ -z "$DIGESTS" ]; then
+            echo "No digests found. Skipping manifest creation."
+            exit 0
+          fi
+          echo "DIGESTS=$DIGESTS" >> "$GITHUB_ENV"
 
-      - name: Create manifest list and push to Docker Hub
-        working-directory: /tmp/digests
+      - name: Create and push manifest lists
         run: |
-          for i in {1..3}; do
-            docker buildx imagetools create \
-              --max-concurrent-uploads=1 \
-              --tag ${{ env.REGISTRY_IMAGE }}:latest \
-              $(ls | grep -E '^[a-f0-9]{64}$' | xargs -I{} echo "${{ env.REGISTRY_IMAGE }}@sha256:{}") && break
-            echo "Retrying Docker Hub push for latest ($i)..."
-            sleep 10
-          done
+          cd /tmp/digests
+          echo "Creating manifest for Docker Hub..."
+          docker buildx imagetools create --tag ${{ env.REGISTRY_IMAGE }}:latest $DIGESTS
+          docker buildx imagetools create --tag ${{ env.REGISTRY_IMAGE }}:${{ env.ZEROTIERONE_VERSION }} $DIGESTS
 
-          for i in {1..3}; do
-            docker buildx imagetools create \
-              --max-concurrent-uploads=1 \
-              --tag ${{ env.REGISTRY_IMAGE }}:${{ env.ZEROTIERONE_VERSION }} \
-              $(ls | grep -E '^[a-f0-9]{64}$' | xargs -I{} echo "${{ env.REGISTRY_IMAGE }}@sha256:{}") && break
-            echo "Retrying Docker Hub push for version ($i)..."
-            sleep 10
-          done
-
-      - name: Create manifest list and push to GHCR
-        working-directory: /tmp/digests
-        run: |
-          for i in {1..3}; do
-            docker buildx imagetools create \
-              --max-concurrent-uploads=1 \
-              --tag ${{ env.GHCR_IMAGE }}:latest \
-              $(ls | grep -E '^[a-f0-9]{64}$' | xargs -I{} echo "${{ env.GHCR_IMAGE }}@sha256:{}") && break
-            echo "Retrying GHCR push for latest ($i)..."
-            sleep 10
-          done
-
-          for i in {1..3}; do
-            docker buildx imagetools create \
-              --max-concurrent-uploads=1 \
-              --tag ${{ env.GHCR_IMAGE }}:${{ env.ZEROTIERONE_VERSION }} \
-              $(ls | grep -E '^[a-f0-9]{64}$' | xargs -I{} echo "${{ env.GHCR_IMAGE }}@sha256:{}") && break
-            echo "Retrying GHCR push for version ($i)..."
-            sleep 10
-          done
+          echo "Creating manifest for GHCR..."
+          docker buildx imagetools create --tag ${{ env.GHCR_IMAGE }}:latest $DIGESTS
+          docker buildx imagetools create --tag ${{ env.GHCR_IMAGE }}:${{ env.ZEROTIERONE_VERSION }} $DIGESTS
 
       - name: Inspect images
         run: |
           echo "Docker Hub images:"
-          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:latest
-          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ env.ZEROTIERONE_VERSION }}
+          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:latest || echo "No Docker Hub manifest found"
+          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ env.ZEROTIERONE_VERSION }} || echo "No Docker Hub manifest found"
           echo "GHCR images:"
-          docker buildx imagetools inspect ${{ env.GHCR_IMAGE }}:latest
-          docker buildx imagetools inspect ${{ env.GHCR_IMAGE }}:${{ env.ZEROTIERONE_VERSION }}
+          docker buildx imagetools inspect ${{ env.GHCR_IMAGE }}:latest || echo "No GHCR manifest found"
+          docker buildx imagetools inspect ${{ env.GHCR_IMAGE }}:${{ env.ZEROTIERONE_VERSION }} || echo "No GHCR manifest found"
