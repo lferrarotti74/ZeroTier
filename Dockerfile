@@ -45,7 +45,7 @@ RUN if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "arm" ]; then \
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
         && . "$HOME/.cargo/env"; \
     fi \
-    && git clone -b ${VERSION} --depth 1 https://github.com/zerotier/ZeroTierOne.git
+    && git clone -b "${VERSION}" --depth 1 https://github.com/zerotier/ZeroTierOne.git
 
 # Set environment variables for specific architectures to prevent build issues
 RUN if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "arm" ]; then \
