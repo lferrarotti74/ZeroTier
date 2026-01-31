@@ -1,10 +1,7 @@
 name: Build release image
 
 # Add permissions block
-permissions:
-  contents: write  # Required for updating variables
-  packages: write
-  actions: write   # Required for updating repository variables
+
 
 on:
   workflow_dispatch:
@@ -129,6 +126,10 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      actions: write
     strategy:
       matrix:
         platform: [
