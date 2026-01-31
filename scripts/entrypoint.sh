@@ -14,6 +14,7 @@ mkztfile() {
   #echo "$content" > "/var/lib/zerotier-one/$file"
   echo "$content" | sudo tee "/var/lib/zerotier-one/$file" > /dev/null
   sudo chmod "$mode" "/var/lib/zerotier-one/$file"
+  return 0
 }
 
 if [ "x$ZEROTIER_API_SECRET" != "x" ]
@@ -37,34 +38,41 @@ killzerotier() {
   log "Killing zerotier"
   sudo kill "$(cat /var/lib/zerotier-one/zerotier-one.pid 2>/dev/null)"
   exit 0
+  return 0
 }
 
 log_header() {
   printf "\r=>"
+  return 0
 }
 
 log_detail_header() {
   printf "\r===>"
+  return 0
 }
 
 log() {
   echo "$(log_header)" "$@"
+  return 0
 }
 
 log_params() {
   title=$1
   shift
   log "$title" "[$@]"
+  return 0
 }
 
 log_detail() {
   echo "$(log_detail_header)" "$@"
+  return 0
 }
 
 log_detail_params() {
   title=$1
   shift
   log_detail "$title" "[$@]"
+  return 0
 }
 
 trap killzerotier INT TERM

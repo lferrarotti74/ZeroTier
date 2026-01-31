@@ -86,12 +86,12 @@ jobs:
     # needs: [check-base-image]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0  # Required for proper blame/coverage tracking
 
       - name: Cache SonarQube packages
-        uses: actions/cache@v5
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
@@ -99,21 +99,27 @@ jobs:
 
       - name: Prepare SonarQube arguments
         id: sonar-args
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BRANCH: ${{ github.head_ref }}
+          PR_BASE: ${{ github.base_ref }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
+          if [ "$EVENT_NAME" = "pull_request" ]; then
             echo "args=-Dsonar.projectKey=lferrarotti74_ZeroTier \
                   -Dsonar.organization=lferrarotti74 \
-                  -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} \
-                  -Dsonar.pullrequest.branch=${{ github.head_ref }} \
-                  -Dsonar.pullrequest.base=${{ github.base_ref }}" >> $GITHUB_OUTPUT
+                  -Dsonar.pullrequest.key=$PR_NUMBER \
+                  -Dsonar.pullrequest.branch=$PR_BRANCH \
+                  -Dsonar.pullrequest.base=$PR_BASE" >> $GITHUB_OUTPUT
           else
             echo "args=-Dsonar.projectKey=lferrarotti74_ZeroTier \
                   -Dsonar.organization=lferrarotti74 \
-                  -Dsonar.branch.name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+                  -Dsonar.branch.name=$REF_NAME" >> $GITHUB_OUTPUT
           fi
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v7.0.0
+        uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9 # v7.0.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io   # Change to self-hosted URL if needed
@@ -139,14 +145,16 @@ jobs:
         ]
     steps:
       - name: Print the Purpose of Run
+        env:
+          TAGS: ${{ inputs.tags }}
         run: |
-          echo "Purpose of Run: ${{ inputs.tags }}"
+          echo "Purpose of Run: $TAGS"
       
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         
       - name: Set Environment
-        uses: c-py/action-dotenv-to-setenv@v5
+        uses: c-py/action-dotenv-to-setenv@925b5d99a3f1e4bd7b4e9928be4e2491e29891d9 # v5
         id: source-env
         with:
           env-file: env/.env
@@ -177,7 +185,7 @@ jobs:
         
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
         with:
           images: |
             ${{ env.REGISTRY_IMAGE }}
@@ -197,7 +205,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Set up QEMU for Multi-Arch Builds
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
         with:
           image: tonistiigi/binfmt:latest
           platforms: all
@@ -208,13 +216,13 @@ jobs:
           echo "QEMU has been set up successfully."
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.12.0
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
         with:
           version: latest
           
       # Add caching for Docker layers
       - name: Cache Docker layers
-        uses: actions/cache@v5
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ matrix.platform.name }}-${{ github.sha }}
@@ -227,7 +235,7 @@ jobs:
       # - CACHEBUST: Cache invalidation timestamp based on trigger type
       - name: Build and Push Image by Digest
         id: build
-        uses: docker/build-push-action@v6.18.0
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:
           context: .
           platforms: ${{ matrix.platform.name }}
@@ -259,7 +267,7 @@ jobs:
           ls -l /tmp/digests
           
       - name: Upload Digest
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: digests-${{ env.PLATFORM_PAIR }}
           path: /tmp/digests/*
@@ -272,10 +280,10 @@ jobs:
       - build
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Download digests
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           path: /tmp/digests
           pattern: digests-*
@@ -287,7 +295,7 @@ jobs:
           ls -l /tmp/digests
 
       - name: Set Environment
-        uses: c-py/action-dotenv-to-setenv@v5
+        uses: c-py/action-dotenv-to-setenv@925b5d99a3f1e4bd7b4e9928be4e2491e29891d9 # v5
         id: source-env
         with:
           env-file: env/.env
@@ -310,11 +318,11 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.12.0
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
         with:
           images: |
             ${{ env.REGISTRY_IMAGE }}
