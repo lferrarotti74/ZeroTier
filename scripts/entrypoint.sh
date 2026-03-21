@@ -11,7 +11,6 @@ mkztfile() {
   content=$3
 
   sudo mkdir -p /var/lib/zerotier-one
-  #echo "$content" > "/var/lib/zerotier-one/$file"
   echo "$content" | sudo tee "/var/lib/zerotier-one/$file" > /dev/null
   sudo chmod "$mode" "/var/lib/zerotier-one/$file"
   return 0
@@ -35,7 +34,6 @@ fi
 mkztfile zerotier-one.port 0600 "9993"
 
 killzerotier() {
-  log "Killing zerotier"
   sudo kill "$(cat /var/lib/zerotier-one/zerotier-one.pid 2>/dev/null)"
   exit 0
   return 0
@@ -113,7 +111,6 @@ if [ "$ZT_OVERRIDE_LOCAL_CONF" = 'true' ] || [ ! -f "/var/lib/zerotier-one/local
         \"allowTcpFallbackRelay\": ${ZT_ALLOW_TCP_FALLBACK_RELAY:-$DEFAULT_ALLOW_TCP_FALLBACK_RELAY}
     }
   }" | sudo tee /var/lib/zerotier-one/local.conf > /dev/null
-  #}" > /var/lib/zerotier-one/local.conf
 fi
 
 if [ "x$ZT_PLANET_URL_FILE" != "x" ]; then
@@ -123,13 +120,11 @@ fi
 
 if [ "x$@" != "x" ] && [ "x$ZT_DEVICEMAP" != "x" ]; then
   log_params "Special Device Mapping was selected for joining Network from command line:" "$@"
-  #echo $@="$ZT_DEVICEMAP" > /var/lib/zerotier-one/devicemap
   echo $@="$ZT_DEVICEMAP" | sudo tee /var/lib/zerotier-one/devicemap > /dev/null
 fi
 
 if [ "x$ZEROTIER_JOIN_NETWORKS" != "x" ] && [ "x$ZT_DEVICEMAP" != "x" ]; then
   log_params "Special Device Mapping was selected for joining Network from environment:" "$ZEROTIER_JOIN_NETWORKS"
-  #echo "$ZEROTIER_JOIN_NETWORKS"="$ZT_DEVICEMAP" > /var/lib/zerotier-one/devicemap
   echo "$ZEROTIER_JOIN_NETWORKS"="$ZT_DEVICEMAP" | sudo tee /var/lib/zerotier-one/devicemap > /dev/null
 fi
 
@@ -139,7 +134,6 @@ if [ "x$ZT_INTERFACE_PREFIX_BLACKLIST" != "x" ]; then
   INTERFACEPREFIXBLACKLIST=$(echo "$ZT_INTERFACE_PREFIX_BLACKLIST" | jq -R 'split(",")');
   echo $INTERFACEPREFIXBLACKLIST
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  #sudo jq --argjson interfacePrefixBlacklist "$INTERFACEPREFIXBLACKLIST" '.settings += { interfacePrefixBlacklist: $interfacePrefixBlacklist }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
   jq --argjson interfacePrefixBlacklist "$INTERFACEPREFIXBLACKLIST" '.settings += { interfacePrefixBlacklist: $interfacePrefixBlacklist }' "$tmpfile" | sudo tee /var/lib/zerotier-one/local.conf > /dev/null &&
   sudo rm -f -- "$tmpfile"
 fi
@@ -149,7 +143,6 @@ if [ "x$ZT_ALLOW_MANAGEMENT_FROM" != "x" ]; then
   tmpfile=$(mktemp)
   ALLOWMANAGEMENTFROM=$(echo "$ZT_ALLOW_MANAGEMENT_FROM" | jq -R 'split(",")');
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  #jq --argjson allowManagementFrom "$ALLOWMANAGEMENTFROM" '.settings += { allowManagementFrom: $allowManagementFrom }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
   jq --argjson allowManagementFrom "$ALLOWMANAGEMENTFROM" '.settings += { allowManagementFrom: $allowManagementFrom }' "$tmpfile" | sudo tee /var/lib/zerotier-one/local.conf > /dev/null &&
   sudo rm -f -- "$tmpfile"
 fi
@@ -159,7 +152,6 @@ if [ "x$ZT_TCP_FALLBACK_RELAY" != "x" ]; then
   tmpfile=$(mktemp)
   TCPFALLBACKRELAY=$(echo "$ZT_TCP_FALLBACK_RELAY");
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  #jq --arg tcpFallbackRelay $TCPFALLBACKRELAY '.settings = { tcpFallbackRelay: $tcpFallbackRelay } + .settings' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
   jq --arg tcpFallbackRelay $TCPFALLBACKRELAY '.settings = { tcpFallbackRelay: $tcpFallbackRelay } + .settings' "$tmpfile" | sudo tee /var/lib/zerotier-one/local.conf > /dev/null &&
   sudo rm -f -- "$tmpfile"
 fi
@@ -169,7 +161,6 @@ if [ "x$ZT_FORCE_TCP_RELAY" != "x" ]; then
   tmpfile=$(mktemp)
   FORCETCPRELAY=$(echo "$ZT_FORCE_TCP_RELAY");
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  #jq --arg forceTcpRelay $FORCETCPRELAY '.settings = { forceTcpRelay: $forceTcpRelay } + .settings' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
   jq --arg forceTcpRelay $FORCETCPRELAY '.settings = { forceTcpRelay: $forceTcpRelay } + .settings' "$tmpfile" | sudo tee /var/lib/zerotier-one/local.conf > /dev/null &&
   sudo rm -f -- "$tmpfile"
 fi
@@ -179,7 +170,6 @@ if [ "x$ZT_SECONDARY_PORT" != "x" ]; then
   tmpfile=$(mktemp)
   SECONDARYPORT=$(echo "$ZT_SECONDARY_PORT");
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  #jq --argjson secondaryPort "$SECONDARYPORT" '.settings += { secondaryPort: $secondaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
   jq --argjson secondaryPort "$SECONDARYPORT" '.settings += { secondaryPort: $secondaryPort }' "$tmpfile" | sudo tee /var/lib/zerotier-one/local.conf > /dev/null &&
   sudo rm -f -- "$tmpfile"
 fi
@@ -189,7 +179,6 @@ if [ "x$ZT_TERTIARY_PORT" != "x" ]; then
   tmpfile=$(mktemp)
   TERTIARYPORT=$(echo "$ZT_TERTIARY_PORT");
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  #jq --argjson tertiaryPort "$TERTIARYPORT" '.settings += { tertiaryPort: $tertiaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
   jq --argjson tertiaryPort "$TERTIARYPORT" '.settings += { tertiaryPort: $tertiaryPort }' "$tmpfile" | sudo tee /var/lib/zerotier-one/local.conf > /dev/null &&
   sudo rm -f -- "$tmpfile"
 fi
@@ -199,7 +188,6 @@ if [ "x$ZT_ALLOW_SECONDARY_PORT" != "x" ]; then
   tmpfile=$(mktemp)
   SECONDARY_PORT=$(echo "$ZT_ALLOW_SECONDARY_PORT");
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  #jq --argjson allowSecondaryPort "$SECONDARY_PORT" '.settings += { allowSecondaryPort: $allowSecondaryPort }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
   jq --argjson allowSecondaryPort "$SECONDARY_PORT" '.settings += { allowSecondaryPort: $allowSecondaryPort }' "$tmpfile" | sudo tee /var/lib/zerotier-one/local.conf > /dev/null &&
   sudo rm -f -- "$tmpfile"
 fi
@@ -209,7 +197,6 @@ if [ "x$ZT_BIND" != "x" ]; then
   tmpfile=$(mktemp)
   BINDIPLIST=$(echo "$ZT_BIND" | jq -R 'split(",")');
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  #jq --argjson bind "$BINDIPLIST" '.settings += { bind: $bind }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
   jq --argjson bind "$BINDIPLIST" '.settings += { bind: $bind }' "$tmpfile" | sudo tee /var/lib/zerotier-one/local.conf > /dev/null &&
   sudo rm -f -- "$tmpfile"
 fi
@@ -219,29 +206,19 @@ if [ "x$ZT_MULTI_PATH_MODE" != "x" ]; then
   tmpfile=$(mktemp)
   MULTIPATHMODE=$(echo "$ZT_MULTI_PATH_MODE");
   sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
-  #jq --argjson multipathmode "$MULTIPATHMODE" '.settings += { multipathMode: $multipathmode }' "$tmpfile" >/var/lib/zerotier-one/local.conf &&
   jq --argjson multipathmode "$MULTIPATHMODE" '.settings += { multipathMode: $multipathmode }' "$tmpfile" | sudo tee /var/lib/zerotier-one/local.conf > /dev/null &&
   sudo rm -f -- "$tmpfile"
 fi
 
-log "Starting ZeroTier"
-sudo /bin/sh -c 'nohup /usr/sbin/zerotier-one &'
+# Start ZeroTier and stream its output directly to Docker stdout/stderr (PID 1)
+sudo /usr/sbin/zerotier-one > /proc/1/fd/1 2>/proc/1/fd/2 &
 
 while ! grepzt
 do
-  log_detail "ZeroTier hasn't started, waiting a second"
-
-  if [ -f nohup.out ]
-  then
-    sudo tail -n 10 nohup.out
-  fi
-
   sleep 1
 done
 
 if [ "x$@" != "x" ]; then
-  log_params "Writing healthcheck for networks:" "$@"
-
   sudo /bin/sh -c 'cat >/var/lib/zerotier-one/checkhealth.sh <<EOF
 #!/bin/sh
 for i in '$@'
@@ -249,13 +226,10 @@ do
   [ "\$(sudo zerotier-cli get '$i' status)" = "OK" ] || exit 1
 done
 EOF'
-
   sudo chmod +x /var/lib/zerotier-one/checkhealth.sh
 fi
 
 if [ "x$ZEROTIER_JOIN_NETWORKS" != "x" ]; then
-  log_params "Writing healthcheck for networks:" "$ZEROTIER_JOIN_NETWORKS"
-
   sudo /bin/sh -c 'cat >/var/lib/zerotier-one/checkhealth.sh <<EOF
 #!/bin/sh
 for i in '$ZEROTIER_JOIN_NETWORKS'
@@ -263,22 +237,17 @@ do
   [ "\$(sudo zerotier-cli get '$i' status)" = "OK" ] || exit 1
 done
 EOF'
-
   sudo chmod +x /var/lib/zerotier-one/checkhealth.sh
 fi
 
 if [ -z "$ZT_PRIMARY_PORT" ]; then
-
   while ! nc -z localhost $DEFAULT_PRIMARY_PORT; do
-    sleep 0.1 # wait for 1/10 of the second before check again
+    sleep 0.1
   done
-
 else
-
   while ! nc -z localhost $ZT_PRIMARY_PORT; do
-    sleep 0.1 # wait for 1/10 of the second before check again
+    sleep 0.1
   done
-
 fi
 
 log_params "zerotier-cli info:" "$(sudo zerotier-cli info)"

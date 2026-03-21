@@ -1,50 +1,57 @@
 #!/bin/sh
 
 DEFAULT_PRIMARY_PORT=9993
-export NETWORKS="${ZEROTIER_JOIN_NETWORKS}"
+NETWORKS="${ZEROTIER_JOIN_NETWORKS}"
 
 if [ -z "$ZT_PRIMARY_PORT" ]; then
-
-    export PORT="${DEFAULT_PRIMARY_PORT}"
-
+    PORT="${DEFAULT_PRIMARY_PORT}"
 else
+    PORT="${ZT_PRIMARY_PORT}"
+fi
 
-    export PORT="${ZT_PRIMARY_PORT}"
+# Check ZeroTier daemon status (common to both branches)
+curl -s -o /dev/null --fail \
+    -H "X-ZT1-Auth: $(sudo cat /var/lib/zerotier-one/authtoken.secret)" \
+    http://localhost:$PORT/status
+curlcode=$?
 
+# On curl failure, print the status response for diagnostics
+if [ $curlcode -ne 0 ]; then
+    curl -s \
+        -H "X-ZT1-Auth: $(sudo cat /var/lib/zerotier-one/authtoken.secret)" \
+        http://localhost:$PORT/status
 fi
 
 if [ -z "$NETWORKS" ]; then
 
-    curl -s -o /dev/null --fail -H "X-ZT1-Auth: $(sudo cat /var/lib/zerotier-one/authtoken.secret)" http://localhost:$PORT/status; curlcode=$?
-
-    if [ $curlcode -ne 0 ]; then
-        curl -s -H "X-ZT1-Auth: $(sudo cat /var/lib/zerotier-one/authtoken.secret)" http://localhost:$PORT/status
-    fi
-
+    # No networks configured, just check the daemon is reachable
     if [ $curlcode -eq 0 ]; then
         exit 0  # Service is running, healthcheck passes
     else
-        exit 1  # Something is wrong, not all healthchecks are okay
+        exit 1  # Daemon unreachable
     fi
 
 else
 
-    curl -s -o /dev/null --fail -H "X-ZT1-Auth: $(sudo cat /var/lib/zerotier-one/authtoken.secret)" http://localhost:$PORT/status; curlcode=$?
-
-    /bin/sh /var/lib/zerotier-one/checkhealth.sh; checkhealthcode=$?
-
-    if [ $curlcode -ne 0 ]; then
-        curl -s -H "X-ZT1-Auth: $(sudo cat /var/lib/zerotier-one/authtoken.secret)" http://localhost:$PORT/status
+    # Check each joined network status, guard against checkhealth.sh not yet written
+    if [ -f /var/lib/zerotier-one/checkhealth.sh ]; then
+        /bin/sh /var/lib/zerotier-one/checkhealth.sh
+        checkhealthcode=$?
+    else
+        checkhealthcode=0
     fi
 
+    # On network check failure, print per-network status for diagnostics
     if [ $checkhealthcode -ne 0 ]; then
-        sudo zerotier-cli get "$NETWORKS" status
+        for network in $NETWORKS; do
+            sudo zerotier-cli get "$network" status
+        done
     fi
 
     if [ $curlcode -eq 0 ] && [ $checkhealthcode -eq 0 ]; then
-        exit 0  # Service is running, healthcheck passes
+        exit 0  # Service is running and all networks are OK
     else
-        exit 1  # Something is wrong, not all healthchecks are okay
+        exit 1  # Daemon unreachable or one or more networks not OK
     fi
 
 fi
