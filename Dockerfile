@@ -40,10 +40,9 @@ RUN if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "arm" ]; then \
         echo "Setting up IBM System z (s390x) architecture" && \
         apk --no-cache add rust cargo; \
     else \
-        # For AMD64 (including variants v2, v3, v4), use rustup
+        # For AMD64 (including variants v2, v3, v4), use Alpine packages (avoid executing remote install scripts)
         echo "Setting up AMD64 architecture (variant: ${TARGETVARIANT:-v1})" && \
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
-        && . "$HOME/.cargo/env"; \
+        apk --no-cache add rust cargo; \
     fi \
     && git clone -b "${VERSION}" --depth 1 https://github.com/zerotier/ZeroTierOne.git
 
@@ -102,7 +101,6 @@ RUN if [ "$TARGETARCH" = "arm64" ] || [ "$TARGETARCH" = "arm" ]; then \
         (/usr/bin/make -j2 || /usr/bin/make -j1); \
     else \
         # AMD64 builds (including v2, v3, v4 variants) with full parallelism
-        . "$HOME/.cargo/env" 2>/dev/null || true && \
         echo "Building for AMD64 (variant: ${TARGETVARIANT:-v1}) with full parallelism..." && \
         if [ "$TARGETVARIANT" = "v2" ] || [ "$TARGETVARIANT" = "v3" ] || [ "$TARGETVARIANT" = "v4" ]; then \
             # Enhanced optimizations for newer AMD64 variants
