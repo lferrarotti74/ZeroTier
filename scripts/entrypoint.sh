@@ -117,16 +117,16 @@ if [ "x$ZT_PLANET_URL_FILE" != "x" ]; then
   log_params "Downloading Custom Planet File from Controller URL:" "$ZT_PLANET_URL_FILE"
   tmpfile=$(mktemp)
   attempt=1
-  max_attempts=5
+  max_attempts=10
   success=false
   while [ "$attempt" -le "$max_attempts" ]; do
-    if sudo curl -sL -f -4 --max-time 15 "$ZT_PLANET_URL_FILE" -o "$tmpfile" && [ -s "$tmpfile" ]; then
+    if sudo curl -sL -f -4 --max-time 30 "$ZT_PLANET_URL_FILE" -o "$tmpfile" && [ -s "$tmpfile" ]; then
       success=true
       break
     fi
     log_params "Planet file download attempt failed, retrying:" "attempt $attempt/$max_attempts"
     attempt=$((attempt + 1))
-    sleep 2
+    sleep 3
   done
   if [ "$success" = "true" ]; then
     # Basic sanity check: a valid ZeroTier planet file should be at least a few hundred bytes
