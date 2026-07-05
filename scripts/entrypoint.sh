@@ -115,7 +115,23 @@ fi
 
 if [ "x$ZT_PLANET_URL_FILE" != "x" ]; then
   log_params "Downloading Custom Planet File from Controller URL:" "$ZT_PLANET_URL_FILE"
-  sudo curl -s "$ZT_PLANET_URL_FILE" -o /var/lib/zerotier-one/planet
+  tmpfile=$(mktemp)
+  if sudo curl -sL -f --max-time 15 "$ZT_PLANET_URL_FILE" -o "$tmpfile" && [ -s "$tmpfile" ]; then
+    # Basic sanity check: a valid ZeroTier planet file should be at least a few hundred bytes
+    # (real planet files are typically 500+ bytes; reject anything suspiciously small,
+    # which usually indicates an HTML error page or empty/truncated response)
+    filesize=$(wc -c < "$tmpfile")
+    if [ "$filesize" -ge 500 ]; then
+      sudo cp "$tmpfile" /var/lib/zerotier-one/planet
+      sudo chmod 0644 /var/lib/zerotier-one/planet
+      log_params "Planet file updated successfully, size:" "$filesize bytes"
+    else
+      log_params "WARNING: Downloaded planet file looks invalid (too small), keeping existing file. Size:" "$filesize bytes"
+    fi
+  else
+    log "WARNING: Planet file download failed (curl error or empty response), keeping existing file"
+  fi
+  sudo rm -f -- "$tmpfile"
 fi
 
 if [ "x$@" != "x" ] && [ "x$ZT_DEVICEMAP" != "x" ]; then
