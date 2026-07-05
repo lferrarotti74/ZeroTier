@@ -120,7 +120,7 @@ if [ "x$ZT_PLANET_URL_FILE" != "x" ]; then
   max_attempts=5
   success=false
   while [ "$attempt" -le "$max_attempts" ]; do
-    if sudo curl -sL -f --max-time 15 "$ZT_PLANET_URL_FILE" -o "$tmpfile" && [ -s "$tmpfile" ]; then
+    if sudo curl -sL -f -4 --max-time 15 "$ZT_PLANET_URL_FILE" -o "$tmpfile" && [ -s "$tmpfile" ]; then
       success=true
       break
     fi
