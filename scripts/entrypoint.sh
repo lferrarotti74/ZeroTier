@@ -162,6 +162,7 @@ if [ "x$ZT_PLANET_URL_FILE" != "x" ]; then
     if [ "$filesize" -ge 100 ]; then
       sudo cp "$tmpfile" /var/lib/zerotier-one/planet
       sudo chmod 0644 /var/lib/zerotier-one/planet
+      sudo chown zerotier:zerotier /var/lib/zerotier-one/planet 2>/dev/null || true
       log_params "Planet file updated successfully, size:" "$filesize bytes"
     else
       log_params "WARNING: Downloaded planet file looks invalid (too small), keeping existing file. Size:" "$filesize bytes"
