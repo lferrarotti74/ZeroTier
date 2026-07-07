@@ -134,6 +134,7 @@ if [ "x$ZT_PLANET_URL_FILE" != "x" ]; then
   # (some Docker DNS resolvers only return an AAAA record, and -4 alone does
   # not reliably prevent curl from taking that IPv6 path)
   zt_planet_ipv4=$(getent ahostsv4 "$zt_planet_host" 2>/dev/null | head -1 | awk '{print $1}')
+  log_params "DEBUG - resolved IPv4:" "[$zt_planet_ipv4]"
 
   if [ -n "$zt_planet_ipv4" ]; then
     resolve_opts="--resolve ${zt_planet_host}:${zt_planet_port}:${zt_planet_ipv4}"
