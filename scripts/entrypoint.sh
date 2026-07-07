@@ -119,8 +119,31 @@ if [ "x$ZT_PLANET_URL_FILE" != "x" ]; then
   attempt=1
   max_attempts=4
   success=false
+
+  # Extract hostname and port from the URL for use with --resolve
+  zt_planet_host=$(echo "$ZT_PLANET_URL_FILE" | sed -E 's#^[a-zA-Z]+://([^:/]+).*#\1#')
+  zt_planet_port=$(echo "$ZT_PLANET_URL_FILE" | sed -nE 's#^[a-zA-Z]+://[^:/]+:([0-9]+).*#\1#p')
+  if [ -z "$zt_planet_port" ]; then
+    case "$ZT_PLANET_URL_FILE" in
+      http://*) zt_planet_port=80 ;;
+      *) zt_planet_port=443 ;;
+    esac
+  fi
+
+  # Resolve to an IPv4 address specifically, to avoid unreliable IPv6 paths
+  # (some Docker DNS resolvers only return an AAAA record, and -4 alone does
+  # not reliably prevent curl from taking that IPv6 path)
+  zt_planet_ipv4=$(getent ahostsv4 "$zt_planet_host" 2>/dev/null | head -1 | awk '{print $1}')
+
+  if [ -n "$zt_planet_ipv4" ]; then
+    resolve_opts="--resolve ${zt_planet_host}:${zt_planet_port}:${zt_planet_ipv4}"
+  else
+    log_params "WARNING: Could not resolve an IPv4 address for" "$zt_planet_host, falling back to default resolution"
+    resolve_opts="-4"
+  fi
+
   while [ "$attempt" -le "$max_attempts" ]; do
-    if sudo curl -sL -f -4 --max-time 30 "$ZT_PLANET_URL_FILE" -o "$tmpfile" && [ -s "$tmpfile" ]; then
+    if sudo curl -sL -f $resolve_opts --max-time 30 "$ZT_PLANET_URL_FILE" -o "$tmpfile" && [ -s "$tmpfile" ]; then
       success=true
       break
     fi
