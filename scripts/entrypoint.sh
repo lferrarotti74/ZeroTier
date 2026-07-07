@@ -144,7 +144,18 @@ if [ "x$ZT_PLANET_URL_FILE" != "x" ]; then
   fi
 
   while [ "$attempt" -le "$max_attempts" ]; do
-    if sudo curl -sL -f $resolve_opts --max-time 30 "$ZT_PLANET_URL_FILE" -o "$tmpfile" && [ -s "$tmpfile" ]; then
+    # DEBUG - comparison run without sudo, to isolate whether sudo itself is
+    # the boot-time culprit. Output/exit code only, not used for success logic.
+    nosudo_tmpfile=$(mktemp)
+    curl -L -f $resolve_opts --max-time 30 "$ZT_PLANET_URL_FILE" -o "$nosudo_tmpfile" 2>&1
+    curl_nosudo_exit=$?
+    log_params "DEBUG - non-sudo curl exit code:" "$curl_nosudo_exit"
+    rm -f -- "$nosudo_tmpfile"
+
+    sudo curl -L -f $resolve_opts --max-time 30 "$ZT_PLANET_URL_FILE" -o "$tmpfile" 2>&1
+    curl_exit=$?
+    log_params "DEBUG - curl exit code:" "$curl_exit"
+    if [ "$curl_exit" -eq 0 ] && [ -s "$tmpfile" ]; then
       success=true
       break
     fi
