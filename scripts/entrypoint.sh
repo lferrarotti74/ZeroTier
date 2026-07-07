@@ -152,6 +152,9 @@ if [ "x$ZT_PLANET_URL_FILE" != "x" ]; then
     sleep 20
   done
   if [ "$success" = "true" ]; then
+    # tmpfile is root-owned (created via sudo mktemp); make it readable so the
+    # unprivileged shell's redirect below can open it for the sanity check
+    sudo chmod 0644 "$tmpfile"
     # Basic sanity check: a valid ZeroTier planet file should be at least a few hundred bytes
     # (real planet files are typically 100+ bytes; reject anything suspiciously small,
     # which usually indicates an HTML error page or empty/truncated response)
