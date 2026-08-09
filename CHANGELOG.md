@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ZeroTier One v1.14.2 integration
 - Multi-architecture support (amd64, arm64, armv7)
 - Licensing information for ZeroTier versions
+- `ZT_MULTICORE_ENABLED` environment variable to enable ZeroTier's multi-core
+  packet processing (multithreading). When set to `true`, `concurrency` is
+  auto-calculated as half of the container's detected physical cores (via
+  `nproc`, minimum 1) and `cpuPinningEnabled` is always forced to `false`
 
 ### Changed
 - Updated project documentation to follow community standards

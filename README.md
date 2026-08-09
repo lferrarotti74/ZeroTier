@@ -192,6 +192,32 @@ docker exec zerotier-one zerotier-cli set <network-id> allowGlobal=1
 docker exec zerotier-one zerotier-cli set <network-id> allowDefault=1
 ```
 
+### Multithreading (Multi-core Packet Processing)
+
+ZeroTier One supports a beta multi-core packet processing mode (Linux/FreeBSD
+only). It's disabled by default and mostly benefits LAN throughput. To enable
+it, set the `ZT_MULTICORE_ENABLED` environment variable to `true`:
+
+```bash
+docker run -d \
+  --name zerotier-one \
+  -e ZT_MULTICORE_ENABLED=true \
+  ... \
+  lferrarotti74/zerotier
+```
+
+When enabled, the entrypoint automatically:
+- Sets `concurrency` to half of the container's detected physical cores
+  (minimum 1)
+- Forces `cpuPinningEnabled` to `false` (CPU pinning is experimental and can
+  be counterproductive if the container is limited via `--cpuset-cpus` or
+  `--cpus` to fewer cores than the calculated `concurrency` value)
+
+These values are written to `local.conf` and are not individually
+configurable — only `ZT_MULTICORE_ENABLED` is exposed. See the
+[official multithreading documentation](https://docs.zerotier.com/multithreading/)
+for more details.
+
 ## Building from Source
 
 To build the Docker image yourself:
