@@ -265,6 +265,32 @@ if [ "x$ZT_MULTI_PATH_MODE" != "x" ]; then
   sudo rm -f -- "$tmpfile"
 fi
 
+if [ "x$ZT_MULTICORE_ENABLED" != "x" ]; then
+  log_params "Multicore (multithreading) support is provided:" "$ZT_MULTICORE_ENABLED"
+  tmpfile=$(mktemp)
+  MULTICOREENABLED=$(echo "$ZT_MULTICORE_ENABLED");
+  if [ "$MULTICOREENABLED" = "true" ]; then
+    # Only concurrency is derived here; cpuPinningEnabled is always forced to
+    # false since pinning is experimental and easily counterproductive under
+    # Docker's --cpuset-cpus/--cpus limits.
+    PHYSICALCORES=$(nproc)
+    CONCURRENCY=$((PHYSICALCORES / 2))
+    if [ "$CONCURRENCY" -lt 1 ]; then
+      CONCURRENCY=1
+    fi
+    log_params "Auto-calculated concurrency (half of $PHYSICALCORES detected physical cores):" "$CONCURRENCY"
+    sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+    jq --argjson multicoreEnabled "$MULTICOREENABLED" --argjson concurrency "$CONCURRENCY" --argjson cpuPinningEnabled false \
+      '.settings += { multicoreEnabled: $multicoreEnabled, concurrency: $concurrency, cpuPinningEnabled: $cpuPinningEnabled }' \
+      "$tmpfile" | sudo tee /var/lib/zerotier-one/local.conf > /dev/null &&
+    sudo rm -f -- "$tmpfile"
+  else
+    sudo cp /var/lib/zerotier-one/local.conf "$tmpfile" &&
+    jq --argjson multicoreEnabled "$MULTICOREENABLED" '.settings += { multicoreEnabled: $multicoreEnabled }' "$tmpfile" | sudo tee /var/lib/zerotier-one/local.conf > /dev/null &&
+    sudo rm -f -- "$tmpfile"
+  fi
+fi
+
 # Start ZeroTier and stream its output directly to Docker stdout/stderr (PID 1)
 sudo /usr/sbin/zerotier-one > /proc/1/fd/1 2>/proc/1/fd/2 &
 
